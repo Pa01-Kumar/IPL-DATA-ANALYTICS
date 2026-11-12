@@ -104,15 +104,17 @@ The Win Probability model estimates the probability that the team batting second
 
 ### Reported holdout performance
 
-| Metric | Result |
+The **saved model used by the dashboard** is the uncalibrated Logistic Regression artifact exported by notebook `07b_winprob.ipynb`. Its recorded temporal holdout metrics are:
+
+| Metric | Saved dashboard model |
 |---|---:|
-| Accuracy | **82.0%** |
-| ROC-AUC | **0.908** |
-| Log loss | **0.424** |
+| Accuracy | **78.7%** |
+| ROC-AUC | **0.887** |
+| Log loss | **0.450** |
 
-The evaluation used 24,433 delivery-level observations from 2024–2025. These are the results of the temporally separated, calibrated evaluation in notebook `07b_winprob.ipynb`.
+These results correspond to the notebook's 2023–2025 holdout evaluation. The dashboard reads the metrics from the saved model artifact rather than displaying hard-coded figures.
 
-The notebook also records the uncalibrated model's results on a broader 2023–2025 test split: 78.7% accuracy and 0.887 ROC-AUC. These figures refer to a different evaluation setup and should not be mixed with the calibrated 2024–2025 results above.
+The notebook also contains a separate calibrated experiment reporting 82.0% accuracy, 0.908 ROC-AUC and 0.424 log loss on 24,433 observations from 2024–2025. That calibrated estimator is not included in the saved dashboard model artifact, so those figures are reported as a notebook experiment and are **not** presented as the deployed dashboard model's performance.
 
 ### Pre-match prediction
 
