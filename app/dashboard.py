@@ -7,11 +7,34 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import sys
 from pathlib import Path
 
-st.set_page_config(page_title="IPL Analytics", page_icon="🏏", layout="wide")
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-ROOT   = Path(__file__).resolve().parent.parent
+from src.intelligence import load_player_intelligence, franchise_fit_scores
+
+st.set_page_config(page_title="IPL Intelligence", page_icon="🏏", layout="wide")
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+.stApp { background:radial-gradient(ellipse at 8% 0%,#1c2a3d 0%,#0b111b 42%,#090e16 100%); color:#eef2f7; font-family:'DM Sans',sans-serif; }
+h1,h2,h3 { font-family:'Space Grotesk',sans-serif !important; letter-spacing:-.035em; }
+h1 { color:#f6f8fb; font-weight:700 !important; }
+[data-testid="stMetric"] { background:linear-gradient(145deg,#172436,#111a27); border:1px solid #29394e; padding:16px 18px; border-radius:15px; }
+[data-testid="stMetricLabel"] { color:#aab8c9 !important; }
+[data-testid="stMetricValue"] { color:#e9f3ff !important; }
+section[data-testid="stSidebar"] { background:#0c1420; border-right:1px solid #233247; }
+section[data-testid="stSidebar"] * { color:#e8eef7; }
+.stButton>button,.stDownloadButton>button { border-radius:10px; border:1px solid #9fca4c; background:#c8f169; color:#10170a; font-weight:700; }
+div[data-testid="stDataFrame"] { border:1px solid #29394e; border-radius:12px; overflow:hidden; }
+[data-testid="stCaptionContainer"] { color:#9aa7b8; }
+hr { border-color:#29394e; }
+</style>
+""", unsafe_allow_html=True)
+
 DATA   = ROOT / "data" / "processed"
 MODELS = ROOT / "models"
 
@@ -46,6 +69,8 @@ def compute_wp_curve(match_id):
     d = load_deliveries()
     md = d[d["match_id"] == match_id]
     if md.empty: return None
+    if not (md["innings"] == 1).any() or not (md["innings"] == 2).any():
+        return None
     first = md[md["innings"] == 1]["total_runs"].sum()
     c = md[md["innings"] == 2].copy().reset_index(drop=True)
     c["runs_needed"]   = (first + 1) - c["runs_so_far"]
@@ -60,19 +85,27 @@ def compute_wp_curve(match_id):
     c["required_rr"]   = c["required_rr"].clip(0, 30)
     c["rrr_minus_crr"] = c["rrr_minus_crr"].clip(-30, 30)
     c = c[(c["balls_remaining"] >= 0) & (c["runs_needed"] >= 0)].copy()
+    if c.empty:
+        return None
+    if c.empty:
+        return None
 
-    X = wp_pkl["scaler"].transform(c[FEATURES].fillna(0))
-    raw = wp_pkl["model"].predict_proba(X)[:, 1]
-    cal = wp_pkl["iso"].predict(raw) if "iso" in wp_pkl else raw
-    c["wp"] = cal
+    model_features = wp_pkl.get("features", FEATURES)
+    X = wp_pkl["scaler"].transform(c[model_features].fillna(0))
+    # The checked-in dashboard artifact is the uncalibrated Logistic Regression
+    # model; the isotonic calibration experiment is documented separately.
+    c["wp"] = wp_pkl["model"].predict_proba(X)[:, 1]
     c["ball_num"] = 120 - c["balls_left"]
     return c
 
 # ---------------- sidebar ----------------
-st.sidebar.title("🏏 IPL Analytics")
+st.sidebar.markdown("# 🏏 IPL INTELLIGENCE")
+st.sidebar.caption("CRICKET DATA • PLAYER INTELLIGENCE • STRATEGY")
+st.sidebar.markdown("---")
 page = st.sidebar.radio("Page", [
     "Overview", "Player Profile", "Team Comparison", "Venue Insights",
-    "Matchup Explorer", "Auction Value", "Win Probability",
+    "Matchup Explorer", "Player Impact", "Win Probability",
+    "Player Shortlist",
 ])
 
 # ==================== PAGE 1: Overview ====================
@@ -220,6 +253,9 @@ elif page == "Matchup Explorer":
         c1, c2 = st.columns(2)
         batter = c1.selectbox("Batter", sorted(mu["striker"].unique()))
         bowlers = sorted(mu[mu["striker"] == batter]["bowler"].unique())
+        if not bowlers:
+            st.info("No qualifying bowler matchup for this batter.")
+            st.stop()
         bowler = c2.selectbox("Bowler", bowlers)
 
         row = mu[(mu["striker"] == batter) & (mu["bowler"] == bowler)]
@@ -244,9 +280,9 @@ elif page == "Matchup Explorer":
             ax.grid(alpha=0.3, axis="x")
             st.pyplot(fig)
 
-# ==================== PAGE 6: Auction Value ====================
-elif page == "Auction Value":
-    st.title("Auction Value — player impact ranking")
+# ==================== PAGE 6: Player Impact ====================
+elif page == "Player Impact":
+    st.title("Player Impact — performance ranking")
     imp = load_impact()
     top_n = st.slider("Show top N", 10, 100, 30)
 
@@ -268,7 +304,15 @@ elif page == "Auction Value":
 # ==================== PAGE 7: Win Probability ====================
 elif page == "Win Probability":
     st.title("Ball-by-ball Win Probability")
-    st.caption("Model: Logistic Regression · ROC-AUC 0.908 on 2024–2025 holdout")
+    model_info = load_wp()
+    auc = model_info.get("test_auc")
+    accuracy = model_info.get("test_acc")
+    metric_text = []
+    if auc is not None:
+        metric_text.append(f"holdout ROC-AUC {float(auc):.3f}")
+    if accuracy is not None:
+        metric_text.append(f"accuracy {float(accuracy):.1%}")
+    st.caption("Saved Logistic Regression model · " + " · ".join(metric_text) + " · uncalibrated notebook evaluation")
 
     m = load_matches().dropna(subset=["winner"]).copy()
     m["label"] = (m["team1"] + " vs " + m["team2"] + " · " +
@@ -285,8 +329,14 @@ elif page == "Win Probability":
         mid = c.iloc[len(c)//2]
         c1, c2, c3 = st.columns(3)
         c1.metric("Chasing team", end["batting_team"])
-        c2.metric("Final chase WP", f"{end['wp']:.1%}")
-        c3.metric("Result", "WON" if end["wp"] > 0.5 else "LOST")
+        c2.metric("WP at last valid state", f"{end['wp']:.1%}")
+        actual_winner = m.loc[m["match_id"].astype(str) == str(match_id), "winner"]
+        actual_result = (
+            "No result" if actual_winner.empty
+            else "Chasing team won" if actual_winner.iloc[0] == end["batting_team"]
+            else "Chasing team lost"
+        )
+        c3.metric("Actual match result", actual_result)
 
         # Plot
         fig, ax = plt.subplots(figsize=(13, 5))
@@ -311,6 +361,41 @@ elif page == "Win Probability":
                     "runs_needed", "balls_left", "wickets_left", "wp"]
             st.dataframe(c[cols].round(3), use_container_width=True)
 
+# ==================== PAGE 8: Player Shortlist ====================
+elif page == "Player Shortlist":
+    st.title("Player Shortlist & Franchise Fit")
+    st.caption("Discover players whose historical performance matches a hypothetical squad-building brief.")
+    players = load_player_intelligence()
+    st.info("This is a statistical shortlist based on historical performance, not an official team requirement or transfer recommendation.")
+    c1, c2, c3 = st.columns(3)
+    batter_need = c1.slider("Batting priority", 0.0, 1.0, 0.8, 0.05)
+    bowler_need = c2.slider("Bowling priority", 0.0, 1.0, 0.8, 0.05)
+    allrounder_need = c3.slider("All-rounder priority", 0.0, 1.0, 1.0, 0.05)
+    ranked = franchise_fit_scores(players, {"Batter": batter_need, "Bowler": bowler_need, "All-rounder": allrounder_need})
+    categories = ["Batter", "Bowler", "All-rounder"]
+    selected_categories = st.multiselect("Player roles", categories, default=categories)
+    shortlist = ranked[ranked["fit_category"].isin(selected_categories)].copy()
+    c4, c5 = st.columns(2)
+    top_n = c4.slider("Players to shortlist", 5, 50, 15, key="fit_top_n")
+    minimum_impact = c5.slider("Minimum combined impact", 0.0, 100.0, 0.0, 1.0)
+    shortlist = shortlist[shortlist["combined_impact"] >= minimum_impact].head(top_n)
+    st.metric("Players shortlisted", len(shortlist))
+    if shortlist.empty:
+        st.warning("No players match these filters. Lower the impact threshold or select more roles.")
+    display_columns = [col for col in [
+        "player", "fit_category", "franchise_fit_score", "combined_impact",
+        "batting_impact", "bowling_impact", "runs", "average", "strike_rate",
+        "wickets", "economy"
+    ] if col in shortlist.columns]
+    st.dataframe(shortlist[display_columns].round(2), use_container_width=True)
+    st.download_button(
+        "Download player shortlist",
+        shortlist.to_csv(index=False).encode("utf-8"),
+        file_name="ipl_player_shortlist.csv",
+        mime="text/csv",
+    )
+    st.caption("Fit score is a project-defined ranking based on historical impact and the priorities selected above. It does not estimate player cost or future performance.")
+
 # ---------------- footer ----------------
 st.sidebar.markdown("---")
-st.sidebar.caption("Built on Cricsheet ball-by-ball data · 2008–2025")
+st.sidebar.caption("Built on Cricsheet historical data · 2008–2026")

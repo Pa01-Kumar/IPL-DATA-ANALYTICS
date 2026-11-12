@@ -1,30 +1,42 @@
+"""Combine per-match Cricsheet delivery CSV files into one raw table."""
 from pathlib import Path
 import pandas as pd
 
-raw_dir = Path("data/raw")
+ROOT = Path(__file__).resolve().parents[1]
 
-# All per-match delivery files (skip metadata + skip any previous output)
-files = sorted(
-    f for f in raw_dir.glob("*.csv")
-    if not f.name.endswith("_info.csv") and f.name != "all_matches.csv"
-)
-print(f"Found {len(files)} match delivery files")
 
-frames = []
-for f in files:
-    match_id = f.stem
-    df = pd.read_csv(f, dtype={"ball": str})
-    if "match_id" in df.columns:
-        df["match_id"] = match_id          # overwrite to keep type consistent
-    else:
-        df.insert(0, "match_id", match_id) # only add if missing
-    frames.append(df)
+def build_consolidated(raw_dir=None) -> Path:
+    raw_dir = Path(raw_dir) if raw_dir is not None else ROOT / "data" / "raw"
+    files = sorted(
+        f for f in raw_dir.glob("*.csv")
+        if not f.name.endswith("_info.csv") and f.name != "all_matches.csv"
+    )
+    if not files:
+        raise FileNotFoundError(
+            f"No per-match delivery CSV files found in {raw_dir}. "
+            "Run 'python src/download_data.py' first."
+        )
 
-all_matches = pd.concat(frames, ignore_index=True, sort=False)
+    frames = []
+    for file_path in files:
+        match_id = file_path.stem
+        frame = pd.read_csv(file_path, dtype={"ball": str})
+        if "match_id" in frame.columns:
+            frame["match_id"] = match_id
+        else:
+            frame.insert(0, "match_id", match_id)
+        frames.append(frame)
 
-out_path = raw_dir / "all_matches.csv"
-all_matches.to_csv(out_path, index=False)
+    all_matches = pd.concat(frames, ignore_index=True, sort=False)
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    output = raw_dir / "all_matches.csv"
+    all_matches.to_csv(output, index=False)
+    print(f"Processed {len(files)} match files")
+    print(f"Saved: {output.resolve()}")
+    print(f"Rows: {len(all_matches)}")
+    print(f"Columns: {all_matches.columns.tolist()}")
+    return output
 
-print("Saved:", out_path.resolve())
-print("Rows:", len(all_matches))
-print("Columns:", all_matches.columns.tolist())
+
+if __name__ == "__main__":
+    build_consolidated()

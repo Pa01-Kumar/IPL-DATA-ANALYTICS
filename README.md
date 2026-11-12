@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/Framework-Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
   <img src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?logo=scikitlearn&logoColor=white" alt="Scikit-learn">
   <img src="https://img.shields.io/badge/Data-Cricsheet-168AAD" alt="Cricsheet">
@@ -17,9 +17,9 @@
   <a href="#run-the-dashboard-locally">Run Locally</a>
 </p>
 
-# IPL Performance & Decision Analytics
+# IPL Intelligence — Cricket Analytics & Player Strategy
 
-An end-to-end IPL analytics project combining Python-based data preparation, player and team analysis, player-impact scoring, and machine-learning-based win-probability estimation.
+A premium dark sports analytics platform for cricket fans and analysts, combining Python-based match intelligence, player performance analysis, hypothetical franchise recruitment fit, and player shortlisting.
 
 The project uses Cricsheet ball-by-ball data and presents its findings through an interactive Streamlit dashboard.
 
@@ -28,15 +28,15 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 - **Dataset:** 295,557 delivery records across 1,243 matches
 - **Coverage in the processed dataset:** 2008–2026
 - **Data source:** [Cricsheet](https://cricsheet.org/)
-- **Dashboard:** Streamlit, with seven analytical pages
-- **Machine learning:** Logistic Regression, StandardScaler, and Isotonic Regression calibration
+- **Dashboard:** Streamlit, with eight analytical pages
+- **Machine learning:** Logistic Regression and StandardScaler for the dashboard model; Isotonic Regression is explored separately in the modelling notebook
 - **Main predictive task:** Estimate the chasing team's win probability as a match progresses
 
 > **Scope note:** The dashboard analyses historical match data. It is not connected to a live match feed. The Win Probability page replays a selected historical chase ball by ball.
 
 ## Dashboard
 
-The Streamlit application contains seven sections:
+The Streamlit application contains eight sections:
 
 | Page | What it shows |
 |---|---|
@@ -45,8 +45,9 @@ The Streamlit application contains seven sections:
 | **Team Comparison** | Head-to-head results between two selected teams |
 | **Venue Insights** | Venue-level first-innings scoring and chasing outcomes |
 | **Matchup Explorer** | Batter-versus-bowler records for qualifying matchups |
-| **Auction Value** | Player impact rankings based on a project-defined batting and bowling score |
+| **Player Impact** | Player impact rankings based on a project-defined batting and bowling score |
 | **Win Probability** | Ball-by-ball estimated chase win probability for a selected historical match |
+| **Player Shortlist** | Filter and rank players against hypothetical batting, bowling and all-rounder priorities; export a recruitment shortlist |
 
 ### Win Probability preview
 
@@ -73,9 +74,9 @@ The raw source files are not included in the repository; they are excluded throu
 
 Batters are assigned project-defined roles using their batting position, innings patterns, and phase-specific performance. The implemented categories include **Opener, Anchor, Finisher, Middle-order, and Bowler**.
 
-The Auction Value page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled).
+The Player Impact page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled). The Player Shortlist page applies user-defined role priorities to these historical impact indicators. Its score is a shortlist aid, not a real franchise scouting decision.
 
-**Interpretation:** This is a project-defined performance score, not an estimate of actual IPL auction prices or a financial valuation.
+**Interpretation:** This is a project-defined performance score, not an estimate of actual IPL auction prices or a financial valuation. Franchise-fit rankings are similarly heuristic and should be reviewed by analysts.
 
 ### Matchup analysis
 
@@ -83,7 +84,7 @@ The Matchup Explorer uses batter-bowler aggregates to show balls faced, runs, di
 
 ## Win Probability model
 
-The Win Probability model estimates the probability that the team batting second will win, based on the state of the chase after each delivery.
+The Win Probability model estimates the probability that the team batting second will win, based on the state of the chase after each delivery. The dashboard loads the saved, uncalibrated Logistic Regression artifact. The notebook also evaluates a separately calibrated experiment.
 
 **Input features**
 
@@ -96,22 +97,25 @@ The Win Probability model estimates the probability that the team batting second
 
 **Model pipeline**
 
+The notebook documents two evaluation paths:
 1. Train a Logistic Regression classifier on historical chase states from **2008–2022**.
-2. Use the **2023** season as a separate calibration set.
-3. Apply Isotonic Regression to calibrate the model's predicted probabilities.
-4. Evaluate the calibrated model on the **2024–2025** holdout seasons.
+2. Evaluate an uncalibrated model on later seasons; this is the model artifact loaded by the dashboard.
+3. In a separate experiment, use **2023** as a calibration set and apply Isotonic Regression.
+4. Evaluate that calibrated experiment on the **2024–2025** holdout seasons.
 
 ### Reported holdout performance
 
-| Metric | Result |
+The **saved model used by the dashboard** is the uncalibrated Logistic Regression artifact exported by notebook `07b_winprob.ipynb`. Its recorded temporal holdout metrics are:
+
+| Metric | Saved dashboard model |
 |---|---:|
-| Accuracy | **82.0%** |
-| ROC-AUC | **0.908** |
-| Log loss | **0.424** |
+| Accuracy | **78.7%** |
+| ROC-AUC | **0.887** |
+| Log loss | **0.450** |
 
-The evaluation used 24,433 delivery-level observations from 2024–2025. These are the results of the temporally separated, calibrated evaluation in notebook `07b_winprob.ipynb`.
+These results correspond to the notebook's 2023–2025 holdout evaluation. The dashboard reads the metrics from the saved model artifact rather than displaying hard-coded figures.
 
-The notebook also records the uncalibrated model's results on a broader 2023–2025 test split: 78.7% accuracy and 0.887 ROC-AUC. These figures refer to a different evaluation setup and should not be mixed with the calibrated 2024–2025 results above.
+The notebook also contains a separate calibrated experiment reporting 82.0% accuracy, 0.908 ROC-AUC and 0.424 log loss on 24,433 observations from 2024–2025. That calibrated estimator is not included in the saved dashboard model artifact, so those figures are reported as a notebook experiment and are **not** presented as the deployed dashboard model's performance.
 
 ### Pre-match prediction
 
@@ -149,7 +153,8 @@ IPL-DATA-ANALYTICS/
 │   └── winprob_1426280.png
 ├── src/
 │   ├── build_consolidated.py
-│   └── download_data.py
+│   ├── download_data.py
+│   └── intelligence.py
 └── .gitignore
 ```
 
@@ -157,7 +162,7 @@ IPL-DATA-ANALYTICS/
 
 ### Requirements
 
-- Python 3.9 or later
+- Python 3.11 or later
 - pip
 
 ### 1. Clone the repository
@@ -169,11 +174,18 @@ cd IPL-DATA-ANALYTICS
 
 ### 2. Create and activate a virtual environment
 
-**Windows (PowerShell or Command Prompt):**
+**Windows PowerShell:**
 
-```bash
+```powershell
 python -m venv .venv
-.venv\\Scripts\\activate
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows Command Prompt:**
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate.bat
 ```
 
 **macOS / Linux:**
@@ -187,13 +199,7 @@ source .venv/bin/activate
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install streamlit pandas numpy matplotlib scikit-learn
-```
-
-For running the data-download script or exploring the notebooks, also install:
-
-```bash
-python -m pip install requests seaborn jupyter
+python -m pip install -r requirements.txt
 ```
 
 ### 4. Launch the dashboard
@@ -201,6 +207,7 @@ python -m pip install requests seaborn jupyter
 From the repository root, run:
 
 ```bash
+python -m pytest -q
 streamlit run app/dashboard.py
 ```
 
@@ -227,11 +234,15 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 ## Limitations and interpretation
 
 - Win Probability is a model estimate, not a guarantee of the match result.
-- The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
-- The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
-- The Auction Value score is a comparative metric designed for this project; it does not use actual auction transaction prices.
+- The reported 78.7% accuracy and 0.887 ROC-AUC apply to the uncalibrated saved dashboard model's 2023–2025 evaluation. The separate calibrated notebook experiment reports 82.0% accuracy and 0.908 ROC-AUC on 2024–2025.
+- The saved dashboard model was trained on data through 2022 and is uncalibrated. A separate notebook experiment uses 2023 for calibration. Performance on later seasons or future rule changes may differ.
+- The project does not estimate player prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
+
+## Quality checks
+
+A GitHub Actions workflow runs the Python unit tests on pushes to the upgrade branch and pull requests targeting `main`. Run the same checks locally with `python -m pytest -q`.
 
 ## Future improvements
 
