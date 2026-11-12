@@ -27,10 +27,10 @@ Only pre-auction predictors allowlisted in `src/intelligence.py` can be used (fo
 Use the importer to normalize a downloaded source file. It deliberately discards franchise/team and other unapproved columns, and writes an **unverified** manifest. Declare the original price unit explicitly; do not guess or mix currencies.
 
 ```bash
-python src/prepare_auction_data.py --input /path/to/source.csv --source-name "Publisher or dataset" --source-url "https://source.example/data" --price-unit inr --accessed-on 2026-11-13
+python src/prepare_auction_data.py --input /path/to/source.csv --source-name "Publisher or dataset" --source-url "https://source.example/data" --price-unit inr-crore --auction-year 2023 --accessed-on 2026-11-13
 ```
 
-Accepted price units are `inr`, `inr-lakh`, and `inr-crore`. The importer converts to INR lakh. It supports common source headings such as `PLAYER NAME`, `AUCTION YEAR`, `SOLD PRICE`, and `PLAYING ROLE`. It does not infer USD or other currency conversions.
+Accepted price units are `inr`, `inr-lakh`, and `inr-crore`. The importer converts to INR lakh. It supports common source headings such as `PLAYER NAME`, `AUCTION YEAR`, `SOLD PRICE`, and `PLAYING ROLE`. For a single-season file without a year column (such as a squad auction sheet), pass `--auction-year 2023`. It does not infer USD or other currency conversions.
 
 The generated manifest starts with `verified: false`. Before enabling training, manually review and set all of these flags to true only when supported by the source: `sold_only`, `currency_reviewed`, `coverage_reviewed`, `player_matching_reviewed`, `duplicate_reviewed`, and `reuse_rights_reviewed`. Also set `price_unit_after_conversion` to `INR lakh` and document the exact source license/terms. The code checks these flags, but cannot independently prove the truth of a manual declaration.
 
