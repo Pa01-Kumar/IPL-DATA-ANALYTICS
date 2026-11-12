@@ -41,6 +41,7 @@ def prepare_auction_csv(
     source_url: str,
     price_unit: str,
     accessed_on: str,
+    auction_year_override: int | None = None,
 ) -> tuple[int, Path]:
     if price_unit not in PRICE_TO_LAKH:
         raise ValueError(f"Unsupported price unit: {price_unit}")
@@ -49,14 +50,17 @@ def prepare_auction_csv(
         key: _find_column(raw.columns, aliases)
         for key, aliases in COLUMN_ALIASES.items()
     }
-    missing = [key for key in ("player", "auction_year", "sold_price")
-               if selected[key] is None]
+    missing = [key for key in ("player", "sold_price") if selected[key] is None]
+    if selected["auction_year"] is None and auction_year_override is None:
+        missing.append("auction_year (or --auction-year override)")
     if missing:
         raise ValueError("Source CSV is missing required fields: " + ", ".join(missing))
 
     data = pd.DataFrame({
         "player": raw[selected["player"]].astype("string").str.strip(),
-        "auction_year": pd.to_numeric(raw[selected["auction_year"]], errors="coerce"),
+        "auction_year": (pd.to_numeric(raw[selected["auction_year"]], errors="coerce")
+                        if selected["auction_year"] is not None
+                        else auction_year_override),
         "sold_price_lakh": pd.to_numeric(
             raw[selected["sold_price"]].astype("string").str.replace(",", "", regex=False)
             .str.replace(r"[^0-9.\-]", "", regex=True), errors="coerce"
@@ -114,11 +118,13 @@ def main():
                         choices=sorted(PRICE_TO_LAKH),
                         help="Unit of the source sold-price column; conversion is explicit.")
     parser.add_argument("--accessed-on", required=True, help="YYYY-MM-DD")
+    parser.add_argument("--auction-year", type=int, default=None,
+                        help="Use when the source file covers exactly one known auction year and has no year column.")
     args = parser.parse_args()
     count, manifest = prepare_auction_csv(
         args.input, args.output, source_name=args.source_name,
         source_url=args.source_url, price_unit=args.price_unit,
-        accessed_on=args.accessed_on,
+        accessed_on=args.accessed_on, auction_year_override=args.auction_year,
     )
     print(f"Prepared {count} sold-player rows at {args.output}")
     print(f"Created UNVERIFIED manifest at {manifest}")
