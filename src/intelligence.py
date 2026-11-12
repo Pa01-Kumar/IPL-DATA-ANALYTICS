@@ -94,7 +94,7 @@ def train_auction_price_model(path: Path = AUCTION_FILE):
 
     Expected columns: auction_year, sold_price_lakh. Optional predictors can
     include role, age, overseas, runs, average, strike_rate, wickets, economy,
-    and franchise. The final auction year is held out for evaluation.
+    and other pre-auction attributes. Post-sale franchise/team assignment is excluded to prevent target leakage. The final auction year is held out for evaluation.
     """
     from sklearn.compose import ColumnTransformer
     from sklearn.impute import SimpleImputer
