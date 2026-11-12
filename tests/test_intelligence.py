@@ -150,3 +150,21 @@ def test_build_consolidated_combines_match_files(tmp_path):
 def test_build_consolidated_reports_empty_directory(tmp_path):
     with pytest.raises(FileNotFoundError, match="No per-match delivery CSV"):
         build_consolidated(tmp_path)
+
+
+
+def test_specialist_fit_uses_role_specific_impact_only():
+    players = pd.DataFrame([
+        {"player": "Batter", "role": "Batter", "batting_impact": 40,
+         "bowling_impact": 95, "combined_impact": 90},
+        {"player": "Bowler", "role": "Bowler", "batting_impact": 95,
+         "bowling_impact": 40, "combined_impact": 90},
+        {"player": "All-rounder", "role": "All-rounder", "batting_impact": 40,
+         "bowling_impact": 40, "combined_impact": 65},
+    ])
+    ranked = franchise_fit_scores(
+        players, {"Batter": 1, "Bowler": 1, "All-rounder": 1}
+    ).set_index("player")
+    assert ranked.loc["Batter", "franchise_fit_score"] == 40
+    assert ranked.loc["Bowler", "franchise_fit_score"] == 40
+    assert ranked.loc["All-rounder", "franchise_fit_score"] == 65
