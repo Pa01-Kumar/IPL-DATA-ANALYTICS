@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from pathlib import Path
-from src.intelligence import load_player_intelligence, franchise_fit_scores, auction_dataset_status, train_auction_price_model
+from src.intelligence import load_player_intelligence, franchise_fit_scores
 
 st.set_page_config(page_title="IPL Intelligence", page_icon="🏏", layout="wide")
 st.markdown("""
@@ -92,8 +92,8 @@ st.sidebar.caption("CRICKET DATA • PLAYER INTELLIGENCE • STRATEGY")
 st.sidebar.markdown("---")
 page = st.sidebar.radio("Page", [
     "Overview", "Player Profile", "Team Comparison", "Venue Insights",
-    "Matchup Explorer", "Auction Value", "Win Probability",
-    "Franchise Fit", "Auction Price Lab",
+    "Matchup Explorer", "Player Impact", "Win Probability",
+    "Player Shortlist",
 ])
 
 # ==================== PAGE 1: Overview ====================
@@ -266,8 +266,8 @@ elif page == "Matchup Explorer":
             st.pyplot(fig)
 
 # ==================== PAGE 6: Auction Value ====================
-elif page == "Auction Value":
-    st.title("Auction Value — player impact ranking")
+elif page == "Player Impact":
+    st.title("Player Impact — performance ranking")
     imp = load_impact()
     top_n = st.slider("Show top N", 10, 100, 30)
 
@@ -332,46 +332,38 @@ elif page == "Win Probability":
                     "runs_needed", "balls_left", "wickets_left", "wp"]
             st.dataframe(c[cols].round(3), use_container_width=True)
 
-# ==================== PAGE 8: Franchise Fit ====================
-elif page == "Franchise Fit":
-    st.title("Franchise Intelligence")
-    st.caption("Explore player fit using historical impact and analyst-defined squad priorities.")
+# ==================== PAGE 8: Player Shortlist ====================
+elif page == "Player Shortlist":
+    st.title("Player Shortlist & Franchise Fit")
+    st.caption("Discover players whose historical performance matches a hypothetical squad-building brief.")
     players = load_player_intelligence()
-    st.info("Decision-support ranking only — not an official franchise squad assessment. Set role priorities for a hypothetical recruitment brief.")
+    st.info("This is a statistical shortlist, not an official team requirement, transfer recommendation or auction-price prediction.")
     c1, c2, c3 = st.columns(3)
     batter_need = c1.slider("Batting priority", 0.0, 1.0, 0.8, 0.05)
     bowler_need = c2.slider("Bowling priority", 0.0, 1.0, 0.8, 0.05)
     allrounder_need = c3.slider("All-rounder priority", 0.0, 1.0, 1.0, 0.05)
     ranked = franchise_fit_scores(players, {"Batter": batter_need, "Bowler": bowler_need, "All-rounder": allrounder_need})
-    top_n = st.slider("Players to shortlist", 5, 50, 15, key="fit_top_n")
-    st.dataframe(ranked.head(top_n)[["player", "fit_category", "franchise_fit_score", "combined_impact", "batting_impact", "bowling_impact", "runs", "wickets"]].round(2), use_container_width=True)
-    st.download_button("Download shortlist CSV", ranked.head(top_n).to_csv(index=False).encode("utf-8"), file_name="ipl_franchise_fit_shortlist.csv", mime="text/csv")
-
-# ==================== PAGE 9: Auction Price Lab ====================
-elif page == "Auction Price Lab":
-    st.title("Auction Price Intelligence")
-    st.caption("A transparent price-model workspace — no invented auction prices.")
-    ready, message = auction_dataset_status()
-    if not ready:
-        st.warning(message)
-        st.markdown("**Why this is gated:** Cricsheet provides match and delivery performance, not a complete record of auction bids and final sold prices. A price model trained without real transaction outcomes would be misleading.")
-        st.markdown("**Required file:** `data/processed/auction_history.csv`")
-        st.code("auction_year,sold_price_lakh,role,age,overseas,runs,average,strike_rate,wickets,economy,franchise")
-        st.caption("Schema illustration only. Replace it with verified historical records and document source, license and player matching.")
-    else:
-        st.success(message)
-        if st.button("Train and evaluate price model"):
-            try:
-                with st.spinner("Training on earlier auctions and testing on the latest season..."):
-                    model, metrics = train_auction_price_model()
-                st.subheader(f"Temporal holdout: {metrics['holdout_year']}")
-                a, b, c = st.columns(3)
-                a.metric("Mean absolute error", f"₹{metrics['mae_lakh']:.1f} lakh")
-                b.metric("Root mean squared error", f"₹{metrics['rmse_lakh']:.1f} lakh")
-                c.metric("Test records", metrics["records_test"])
-                st.caption("Metrics are in INR lakh. Historical holdout evaluation is not a guarantee of future auction prices.")
-            except Exception as exc:
-                st.error(f"Model could not be trained: {exc}")
+    categories = ["Batter", "Bowler", "All-rounder"]
+    selected_categories = st.multiselect("Player roles", categories, default=categories)
+    shortlist = ranked[ranked["fit_category"].isin(selected_categories)].copy()
+    c4, c5 = st.columns(2)
+    top_n = c4.slider("Players to shortlist", 5, 50, 15, key="fit_top_n")
+    minimum_impact = c5.slider("Minimum combined impact", 0.0, 100.0, 0.0, 1.0)
+    shortlist = shortlist[shortlist["combined_impact"] >= minimum_impact].head(top_n)
+    st.metric("Players shortlisted", len(shortlist))
+    display_columns = [col for col in [
+        "player", "fit_category", "franchise_fit_score", "combined_impact",
+        "batting_impact", "bowling_impact", "runs", "average", "strike_rate",
+        "wickets", "economy"
+    ] if col in shortlist.columns]
+    st.dataframe(shortlist[display_columns].round(2), use_container_width=True)
+    st.download_button(
+        "Download player shortlist",
+        shortlist.to_csv(index=False).encode("utf-8"),
+        file_name="ipl_player_shortlist.csv",
+        mime="text/csv",
+    )
+    st.caption("Fit score is a project-defined ranking based on historical impact and the priorities selected above. It does not estimate player cost or future performance.")
 
 # ---------------- footer ----------------
 st.sidebar.markdown("---")
