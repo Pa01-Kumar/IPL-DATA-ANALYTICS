@@ -19,3 +19,28 @@
 .modal-stats b{font:600 22px 'Space Grotesk';display:block}
 .modal-stats small{font:8px 'DM Mono';letter-spacing:1px;color:#8391a4;display:block;margin-top:6px}
 .modal-note{font-size:11px;line-height:1.7;color:#8f9db0}
+
+/* Cricket match-centre and squad controls */
+.fit-controls{margin:0 0 18px;padding:23px}
+.control-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.control-heading h3{font:600 20px 'Space Grotesk';margin:8px 0 0}
+.priority-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.priority-control,.min-impact{display:grid;grid-template-columns:1fr auto;gap:10px;color:#aab6c6;font-size:11px}
+.priority-control b,.min-impact b{color:var(--lime);font:12px 'DM Mono'}
+.priority-control input,.min-impact input{grid-column:1/-1;width:100%;accent-color:var(--lime);cursor:pointer}
+.filter-row{display:flex;align-items:end;gap:28px;margin-top:22px;padding-top:18px;border-top:1px solid #29384c}
+.filter-label{font:9px 'DM Mono';letter-spacing:1.2px;color:#8b99ac}
+.role-toggles{display:flex;gap:7px;margin-top:9px}
+.role-toggle{border:1px solid #34465c;background:#111c2a;color:#aab6c6;padding:8px 12px;border-radius:8px;font-size:10px}
+.role-toggle.selected{border-color:#9acb5a;color:var(--lime);background:#b7f36b12}
+.min-impact{min-width:140px}
+.match-replay-toolbar{display:flex;justify-content:space-between;align-items:end;gap:18px;padding:18px 20px;background:#121e2d;border:1px solid #2a3b50;border-radius:13px;margin-bottom:16px}
+.match-replay-toolbar label{display:grid;gap:9px;flex:1;font:9px 'DM Mono';letter-spacing:1.2px;color:#8c9aab}
+.match-replay-toolbar select{width:100%;height:43px;background:#0c1724;color:#edf2f7;border:1px solid #34465c;border-radius:8px;padding:0 12px}
+.model-tag{font:8px 'DM Mono';letter-spacing:1px;color:#a5b4c5;white-space:nowrap}
+.model-tag i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lime);margin-right:7px}
+.three-metrics{grid-template-columns:repeat(3,1fr)}
+.match-context{display:flex;justify-content:space-around;gap:15px;border-top:1px solid #29384c;margin-top:15px;padding-top:15px}
+.match-context span{font:8px 'DM Mono';letter-spacing:1px;color:#8290a3}
+.match-context b{display:block;color:var(--lime);font:16px 'Space Grotesk';margin-top:6px}
+@media(max-width:700px){.priority-grid{grid-template-columns:1fr}.filter-row{align-items:stretch;flex-direction:column;gap:16px}.match-replay-toolbar{align-items:stretch;flex-direction:column}.three-metrics{grid-template-columns:1fr}.match-context{flex-direction:column}}
