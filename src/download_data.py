@@ -24,7 +24,7 @@ def safe_extract_zip(content: bytes, destination: Path) -> int:
         for info in archive.infolist():
             member = PurePosixPath(info.filename)
             mode = info.external_attr >> 16
-            if "\\\\" in info.filename or member.is_absolute() or ".." in member.parts:
+            if "\\" in info.filename or member.is_absolute() or ".." in member.parts:
                 raise ValueError(f"Unsafe archive member path: {info.filename}")
             if member.parts and ":" in member.parts[0]:
                 raise ValueError(f"Unsafe archive member path: {info.filename}")
