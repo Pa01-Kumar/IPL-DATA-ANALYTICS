@@ -79,7 +79,8 @@ def compute_wp_curve(match_id):
     c["rrr_minus_crr"] = c["rrr_minus_crr"].clip(-30, 30)
     c = c[(c["balls_remaining"] >= 0) & (c["runs_needed"] >= 0)].copy()
 
-    X = wp_pkl["scaler"].transform(c[FEATURES].fillna(0))
+    model_features = wp_pkl.get("features", FEATURES)
+    X = wp_pkl["scaler"].transform(c[model_features].fillna(0))
     raw = wp_pkl["model"].predict_proba(X)[:, 1]
     cal = wp_pkl["iso"].predict(raw) if "iso" in wp_pkl else raw
     c["wp"] = cal
@@ -289,7 +290,15 @@ elif page == "Player Impact":
 # ==================== PAGE 7: Win Probability ====================
 elif page == "Win Probability":
     st.title("Ball-by-ball Win Probability")
-    st.caption("Model: Logistic Regression · ROC-AUC 0.908 on 2024–2025 holdout")
+    model_info = load_wp()
+    auc = model_info.get("test_auc")
+    accuracy = model_info.get("test_acc")
+    metric_text = []
+    if auc is not None:
+        metric_text.append(f"holdout ROC-AUC {float(auc):.3f}")
+    if accuracy is not None:
+        metric_text.append(f"accuracy {float(accuracy):.1%}")
+    st.caption("Saved Logistic Regression model · " + " · ".join(metric_text) + " · uncalibrated notebook evaluation")
 
     m = load_matches().dropna(subset=["winner"]).copy()
     m["label"] = (m["team1"] + " vs " + m["team2"] + " · " +
