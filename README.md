@@ -1,3 +1,22 @@
+<p align="center">
+  <img src="assets/ipl-analytics-banner.svg" alt="IPL Performance and Decision Analytics banner" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Framework-Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?logo=scikitlearn&logoColor=white" alt="Scikit-learn">
+  <img src="https://img.shields.io/badge/Data-Cricsheet-168AAD" alt="Cricsheet">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License">
+</p>
+
+<p align="center">
+  <a href="#dashboard">Dashboard</a> •
+  <a href="#key-analytical-work">Methodology</a> •
+  <a href="#win-probability-model">Win Probability</a> •
+  <a href="#run-the-dashboard-locally">Run Locally</a>
+</p>
+
 # IPL Performance & Decision Analytics
 
 An end-to-end IPL analytics project combining Python-based data preparation, player and team analysis, player-impact scoring, and machine-learning-based win-probability estimation.
