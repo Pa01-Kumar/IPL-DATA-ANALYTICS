@@ -61,8 +61,8 @@ def franchise_fit_scores(players: pd.DataFrame, role_needs: Mapping[str, float])
     batting = pd.to_numeric(frame["batting_impact"], errors="coerce").fillna(0)
     bowling = pd.to_numeric(frame["bowling_impact"], errors="coerce").fillna(0)
     combined = pd.to_numeric(frame["combined_impact"], errors="coerce").fillna(0)
-    is_bowler = role.str.contains("Bowler", case=False)
-    is_allrounder = role.str.contains("All-rounder", case=False)
+    is_allrounder = role.str.contains(r"all[\s-]?rounder", case=False, regex=True)
+    is_bowler = role.str.contains("Bowler", case=False) & ~is_allrounder
     is_batter = ~(is_bowler | is_allrounder)
     category_weight = np.select(
         [is_bowler, is_allrounder, is_batter],
