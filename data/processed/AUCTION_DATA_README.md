@@ -1,22 +1,40 @@
 # Historical IPL auction data
 
-This folder intentionally does not contain fabricated auction prices.
+## Public research leads — not imported or verified as a training dataset
 
-To enable the price-prediction module, place a verified, properly licensed
-historical transaction dataset at:
+- IPL official auction pages: https://www.iplt20.com/auction/2026/sold
+- Salary Sport, IPL 2025 auction: https://salarysport.com/cricket/ipl/auction/2025/
+- Outside Edge historical acquisition analysis: https://github.com/outside-edge/ipl_auction (its README describes Kaggle, Wikipedia and IPL official sources, and notes a 2024 data gap)
+- Times of India, IPL 2025 sold-player list: https://timesofindia.indiatimes.com/sports/cricket/ipl/top-stories/ipl-auction-2025-full-list-of-sold-players-of-all-teams/articleshow/115618338.cms
 
-    data/processed/auction_history.csv
+These are research leads only. Public visibility does not automatically permit redistribution. Inspect original records, coverage and reuse terms before importing anything. A single season is not sufficient for a temporal train/test evaluation.
 
-Required columns:
-- auction_year: numeric IPL auction year
-- sold_price_lakh: final sold price in INR lakh
+## Required project files
 
-Recommended player predictors (when reliably sourced):
-- role, age, overseas, runs, average, strike_rate
-- wickets, economy, franchise
+Place cleaned transactions at `data/processed/auction_history.csv` and a provenance manifest at `data/processed/auction_history_metadata.json`.
 
-Keep unsold/withdrawn records separate from sold-price regression unless the
-model explicitly treats auction status as a separate classification task.
-Document source URLs, access date, license/terms, player-name matching rules,
-currency units, and missing-value treatment. Do not mix base price with sold
-price. A model must be evaluated on a later auction year not used for training.
+CSV required columns:
+- `player`: normalized player name
+- `auction_year`: numeric auction year
+- `sold_price_lakh`: final sold price in INR lakh, not base price
+
+Only pre-auction predictors allowlisted in `src/intelligence.py` can be used (for example role, age, overseas status and prior-season performance). Post-sale franchise/team, winning bid fields and future performance are excluded.
+
+The metadata JSON must include:
+```json
+{
+  "verified": true,
+  "sources": [
+    {
+      "name": "Publisher or dataset name",
+      "url": "https://source.example/data",
+      "license": "Exact license or terms of use",
+      "accessed_on": "YYYY-MM-DD"
+    }
+  ]
+}
+```
+
+Set `verified` to true only after manually checking provenance, redistribution terms, year coverage, currency, sold-vs-unsold status, player matching and duplicate transactions. Record each source. Never use illustrative data as a real transaction.
+
+The app remains gated without both files and a valid manifest. It requires at least two auction years and at least 10 earlier training records. The latest year is held out. Report MAE/RMSE only after evaluation runs on the verified dataset.
