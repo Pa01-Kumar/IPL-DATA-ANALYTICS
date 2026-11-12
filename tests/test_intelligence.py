@@ -165,6 +165,6 @@ def test_specialist_fit_uses_role_specific_impact_only():
     ranked = franchise_fit_scores(
         players, {"Batter": 1, "Bowler": 1, "All-rounder": 1}
     ).set_index("player")
-    assert ranked.loc["Batter", "franchise_fit_score"] == 40
-    assert ranked.loc["Bowler", "franchise_fit_score"] == 40
-    assert ranked.loc["All-rounder", "franchise_fit_score"] == 65
+    assert ranked.loc["Batter", "franchise_fit_score"] == 0.4
+    assert ranked.loc["Bowler", "franchise_fit_score"] == 0.4
+    assert ranked.loc["All-rounder", "franchise_fit_score"] == 0.65
