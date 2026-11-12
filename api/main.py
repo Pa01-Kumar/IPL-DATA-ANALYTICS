@@ -45,7 +45,7 @@ def overview():
     # IPL datasets may label the inaugural season as "2007/08" rather than 2008.
     # Sort and report season labels as strings instead of forcing them to integers.
     season["season_start"] = pd.to_numeric(
-        season["season"].astype(str).str.extract(r"^(\\d{4})")[0],
+        season["season"].astype(str).str.extract(r"^(\d{4})")[0],
         errors="coerce",
     )
     season = season.sort_values(["season_start", "season"]).drop(columns=["season_start"])
