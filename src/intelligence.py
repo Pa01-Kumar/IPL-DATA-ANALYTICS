@@ -67,8 +67,10 @@ def franchise_fit_scores(players: pd.DataFrame, role_needs: Mapping[str, float])
     category_weight = np.select(
         [is_bowler, is_allrounder, is_batter],
         [weights["Bowler"], weights["All-rounder"], weights["Batter"]], default=0.0)
+    # Use the impact measure that matches each player's role; avoid allowing
+    # a high combined score to inflate a specialist batter's batting fit.
     impact_score = np.where(is_bowler, bowling,
-                            np.where(is_allrounder, combined, np.maximum(batting, combined * .65)))
+                            np.where(is_allrounder, combined, batting))
     frame["franchise_fit_score"] = (impact_score * category_weight / 100).round(2)
     frame["fit_category"] = np.select(
         [is_bowler, is_allrounder, is_batter],
