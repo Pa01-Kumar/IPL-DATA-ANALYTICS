@@ -151,8 +151,33 @@ function Matchups() {
   return <><SectionTitle eyebrow="BATTLE ANALYSIS" title="Batter vs bowler." detail="Look beyond averages. Explore the individual contests inside the game."/><div className="toolbar"><div className="search-box"><Search size={16}/><input placeholder="Filter batter…" value={batter} onChange={e=>setBatter(e.target.value)}/></div><div className="search-box"><Crosshair size={16}/><input placeholder="Filter bowler…" value={bowler} onChange={e=>setBowler(e.target.value)}/></div><button className="primary-button" onClick={search}>Explore matchup</button></div><div className="panel table-panel"><div className="table-heading">MATCHUP RECORDS <span>{rows.length} RESULTS</span></div><div className="table-scroll"><table><thead><tr><th>BATTER</th><th>BOWLER</th><th>BALLS</th><th>RUNS</th><th>DISMISSALS</th><th>STRIKE RATE</th></tr></thead><tbody>{rows.map((r,i)=><tr key={i}><td>{r.striker}</td><td>{r.bowler}</td><td>{fmt(r.balls_faced)}</td><td>{fmt(r.runs)}</td><td>{fmt(r.dismissals)}</td><td>{num(r.SR)}</td></tr>)}</tbody></table></div></div></>;
 }
 
+
 function Shortlist({rows}:{rows:AnyRow[]}) {
-  return <><SectionTitle eyebrow="SQUAD BUILDING LAB" title="Find the right fit." detail="A data-led shortlist shaped by role priorities and historical player impact."/><div className="notice"><CircleHelp size={17}/> Statistical shortlist based on historical performance. This is not an official team requirement or transfer recommendation.</div><div className="shortlist-grid">{rows.map((p,i)=><article className="shortlist-card" key={p.player}><div className="shortlist-rank">#{String(i+1).padStart(2,"0")} <span>{p.fit_category}</span></div><h3>{p.player}</h3><div className="fit-score"><strong>{num(p.franchise_fit_score*100,0)}</strong><span>FIT INDEX</span></div><div className="fit-meter"><i style={{width:`${Math.min(100,p.franchise_fit_score*100)}%`}}/></div><div className="fit-details"><span>Batting impact <b>{num(p.batting_impact)}</b></span><span>Bowling impact <b>{num(p.bowling_impact)}</b></span><span>Combined impact <b>{num(p.combined_impact)}</b></span></div></article>)}</div></>;
+  const [bat,setBat]=useState(0.8),[bowl,setBowl]=useState(0.8),[all,setAll]=useState(1);
+  const [roles,setRoles]=useState(["Batter","Bowler","All-rounder"]),[limit,setLimit]=useState(15);
+  const [items,setItems]=useState(rows),[busy,setBusy]=useState(false);
+  async function refresh() {
+    setBusy(true);
+    try {
+      const q="?batting_priority="+bat+"&bowling_priority="+bowl+"&allrounder_priority="+all+"&roles="+encodeURIComponent(roles.join(","))+"&limit="+limit;
+      setItems(await get<AnyRow[]>("/api/shortlist"+q));
+    } catch { setItems([]); }
+    finally { setBusy(false); }
+  }
+  useEffect(()=>{refresh();},[bat,bowl,all,roles.join(","),limit]);
+  function toggle(role:string) { setRoles(old=>old.includes(role)?old.filter(x=>x!==role):[...old,role]); }
+  return <><SectionTitle eyebrow="SQUAD BUILDING LAB" title="Build a squad with intent." detail="Tune role priorities and discover players using historical performance — without auction-price guesses."/>
+    <div className="notice"><CircleHelp size={17}/> Statistical fit based on historical player impact. Not an official franchise requirement or future-performance prediction.</div>
+    <div className="panel fit-controls">
+      <div className="control-heading"><div><span className="eyebrow">SCOUTING BRIEF</span><h3>Set your squad priorities</h3></div><span className="result-count">{busy?"UPDATING…":items.length+" PLAYERS"}</span></div>
+      <div className="priority-grid">
+        {[["Batting priority",bat,setBat],["Bowling priority",bowl,setBowl],["All-rounder priority",all,setAll]].map(([label,value,setter]:any)=><label className="priority-control" key={label}><span>{label}</span><b>{Number(value).toFixed(2)}</b><input type="range" min="0" max="1" step="0.05" value={value} onChange={e=>setter(Number(e.target.value))}/></label>)}
+      </div>
+      <div className="filter-row"><div><span className="filter-label">PLAYER ROLES</span><div className="role-toggles">{["Batter","Bowler","All-rounder"].map(r=><button type="button" key={r} className={roles.includes(r)?"role-toggle selected":"role-toggle"} onClick={()=>toggle(r)}>{r}</button>)}</div></div><label className="min-impact">SHORTLIST SIZE <b>{limit}</b><input type="range" min="5" max="50" step="1" value={limit} onChange={e=>setLimit(Number(e.target.value))}/></label></div>
+    </div>
+    <div className="shortlist-grid">{items.map((p,i)=><article className="shortlist-card" key={p.player}><div className="shortlist-rank">RANK / {String(i+1).padStart(2,"0")} <span>{p.fit_category}</span></div><h3>{p.player}</h3><div className="fit-score"><strong>{num(p.franchise_fit_score*100,0)}</strong><span>FIT INDEX</span></div><div className="fit-meter"><i style={{width:(Math.min(100,p.franchise_fit_score*100))+"%"}}/></div><div className="fit-details"><span>Batting impact <b>{num(p.batting_impact)}</b></span><span>Bowling impact <b>{num(p.bowling_impact)}</b></span><span>Combined impact <b>{num(p.combined_impact)}</b></span></div></article>)}</div>
+    {!busy&&!items.length&&<div className="empty-state">No players match these filters. Select at least one role.</div>}
+  </>;
 }
 
 function WinProbability() {
