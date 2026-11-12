@@ -229,7 +229,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 
 ## Author
 
-**N. Pavan Kumar**  
+**N PAVAN KUMAR**  
 B.E. – Computer Science and Engineering (AI & ML)  
 East Point College of Engineering and Technology
 
