@@ -2,8 +2,14 @@ name: Python quality checks
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main, "upgrade/**"]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: ipl-intelligence-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
