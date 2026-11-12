@@ -87,3 +87,23 @@ def test_prepare_auction_csv_rejects_unknown_price_unit(tmp_path):
             source, tmp_path / "out.csv", source_name="Example",
             source_url="https://example.org", price_unit="usd",
             accessed_on="2026-11-13")
+
+
+def test_prepare_single_year_auction_file_with_crore_prices(tmp_path):
+    source = tmp_path / "season.csv"
+    pd.DataFrame([
+        {"Player's List": "Player A", "COST IN ₹ (CR.)": "6.0",
+         "TYPE": "BOWLER", "Team": "Franchise X"},
+        {"Player's List": "Player B", "COST IN ₹ (CR.)": "Retained",
+         "TYPE": "BATSMAN", "Team": "Franchise Y"},
+    ]).to_csv(source, index=False)
+    output = tmp_path / "auction_history.csv"
+    count, _ = prepare_auction_csv(
+        source, output, source_name="Single-season data",
+        source_url="https://example.org/season", price_unit="inr-crore",
+        accessed_on="2026-11-13", auction_year_override=2023)
+    result = pd.read_csv(output)
+    assert count == 1
+    assert result.loc[0, "auction_year"] == 2023
+    assert result.loc[0, "sold_price_lakh"] == 600.0
+    assert result.loc[0, "player"] == "Player A"
