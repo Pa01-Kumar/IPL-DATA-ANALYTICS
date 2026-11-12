@@ -1,9 +1,13 @@
 """Execute every Streamlit page against the checked-in project data."""
+from pathlib import Path
+
 from streamlit.testing.v1 import AppTest
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_all_dashboard_pages_render_without_exceptions():
-    app = AppTest.from_file("app/dashboard.py", default_timeout=30).run()
+    app = AppTest.from_file(ROOT / "app" / "dashboard.py", default_timeout=30).run()
     assert not app.exception, [exception.message for exception in app.exception]
 
     page_names = [
