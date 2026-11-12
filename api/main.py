@@ -41,7 +41,15 @@ def overview():
     impact = csv("player_impact.csv")
     season = (matches.dropna(subset=["season"]).groupby("season")
               .agg(matches=("match_id", "nunique"), teams=("team1", "nunique"))
-              .reset_index().sort_values("season"))
+              .reset_index())
+    # IPL datasets may label the inaugural season as "2007/08" rather than 2008.
+    # Sort and report season labels as strings instead of forcing them to integers.
+    season["season_start"] = pd.to_numeric(
+        season["season"].astype(str).str.extract(r"^(\\d{4})")[0],
+        errors="coerce",
+    )
+    season = season.sort_values(["season_start", "season"]).drop(columns=["season_start"])
+    season_labels = season["season"].astype(str).tolist()
     wins = matches.dropna(subset=["winner"]).groupby("winner").size().sort_values(ascending=False).head(10)
     top_batters = batting.sort_values("runs", ascending=False).head(8)
     top_impact = impact.sort_values("combined_impact", ascending=False).head(8)
@@ -49,8 +57,8 @@ def overview():
         "summary": {
             "matches": int(matches["match_id"].nunique()),
             "seasons": int(matches["season"].nunique()),
-            "firstSeason": int(matches["season"].min()),
-            "lastSeason": int(matches["season"].max()),
+            "firstSeason": season_labels[0] if season_labels else None,
+            "lastSeason": season_labels[-1] if season_labels else None,
             "players": int(len(impact)),
             "teams": int(pd.concat([matches["team1"], matches["team2"]]).nunique()),
         },
