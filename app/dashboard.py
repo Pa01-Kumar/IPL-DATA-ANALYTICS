@@ -69,6 +69,8 @@ def compute_wp_curve(match_id):
     d = load_deliveries()
     md = d[d["match_id"] == match_id]
     if md.empty: return None
+    if not (md["innings"] == 1).any() or not (md["innings"] == 2).any():
+        return None
     first = md[md["innings"] == 1]["total_runs"].sum()
     c = md[md["innings"] == 2].copy().reset_index(drop=True)
     c["runs_needed"]   = (first + 1) - c["runs_so_far"]
@@ -83,6 +85,8 @@ def compute_wp_curve(match_id):
     c["required_rr"]   = c["required_rr"].clip(0, 30)
     c["rrr_minus_crr"] = c["rrr_minus_crr"].clip(-30, 30)
     c = c[(c["balls_remaining"] >= 0) & (c["runs_needed"] >= 0)].copy()
+    if c.empty:
+        return None
     if c.empty:
         return None
 
@@ -325,8 +329,14 @@ elif page == "Win Probability":
         mid = c.iloc[len(c)//2]
         c1, c2, c3 = st.columns(3)
         c1.metric("Chasing team", end["batting_team"])
-        c2.metric("Final chase WP", f"{end['wp']:.1%}")
-        c3.metric("Result", "WON" if end["wp"] > 0.5 else "LOST")
+        c2.metric("WP at last valid state", f"{end['wp']:.1%}")
+        actual_winner = m.loc[m["match_id"].astype(str) == str(match_id), "winner"]
+        actual_result = (
+            "No result" if actual_winner.empty
+            else "Chasing team won" if actual_winner.iloc[0] == end["batting_team"]
+            else "Chasing team lost"
+        )
+        c3.metric("Actual match result", actual_result)
 
         # Plot
         fig, ax = plt.subplots(figsize=(13, 5))
