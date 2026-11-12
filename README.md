@@ -17,9 +17,9 @@
   <a href="#run-the-dashboard-locally">Run Locally</a>
 </p>
 
-# IPL Performance & Decision Analytics
+# IPL Intelligence — Cricket Analytics & Auction Strategy
 
-An end-to-end IPL analytics project combining Python-based data preparation, player and team analysis, player-impact scoring, and machine-learning-based win-probability estimation.
+A premium dark sports analytics platform for cricket fans and analysts, combining Python-based match intelligence, player performance analysis, hypothetical franchise recruitment fit, and an auction-price modelling workspace.
 
 The project uses Cricsheet ball-by-ball data and presents its findings through an interactive Streamlit dashboard.
 
@@ -47,6 +47,8 @@ The Streamlit application contains seven sections:
 | **Matchup Explorer** | Batter-versus-bowler records for qualifying matchups |
 | **Auction Value** | Player impact rankings based on a project-defined batting and bowling score |
 | **Win Probability** | Ball-by-ball estimated chase win probability for a selected historical match |
+| **Franchise Fit** | Rank players against analyst-defined batting, bowling and all-rounder priorities |
+| **Auction Price Lab** | Train and evaluate a price model only after verified historical auction transactions are supplied |
 
 ### Win Probability preview
 
@@ -73,9 +75,9 @@ The raw source files are not included in the repository; they are excluded throu
 
 Batters are assigned project-defined roles using their batting position, innings patterns, and phase-specific performance. The implemented categories include **Opener, Anchor, Finisher, Middle-order, and Bowler**.
 
-The Auction Value page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled).
+The Auction Value page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled). The Franchise Fit page applies user-defined role priorities to these historical impact indicators. Its score is a shortlist aid, not a real franchise scouting decision.
 
-**Interpretation:** This is a project-defined performance score, not an estimate of actual IPL auction prices or a financial valuation.
+**Interpretation:** This is a project-defined performance score, not an estimate of actual IPL auction prices or a financial valuation. Franchise-fit rankings are similarly heuristic and should be reviewed by analysts.
 
 ### Matchup analysis
 
@@ -201,7 +203,7 @@ python -m pip install requests seaborn jupyter
 From the repository root, run:
 
 ```bash
-streamlit run app/dashboard.py
+python -m pytest -q\nstreamlit run app/dashboard.py
 ```
 
 Streamlit will print a local address in the terminal, usually `http://localhost:8501`.
@@ -230,10 +232,12 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 - The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
 - The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
 - The Auction Value score is a comparative metric designed for this project; it does not use actual auction transaction prices.
+- The Auction Price Lab is intentionally disabled until verified auction transactions are supplied in `data/processed/auction_history.csv`. Required columns are `auction_year` and `sold_price_lakh`; additional pre-auction player attributes can be used as predictors. Franchise/team assignment is excluded from the price model to avoid using post-sale information. The latest auction year is held out for temporal evaluation.
+- Cricsheet match data is not auction transaction data. Do not interpret a schema example as a real record or report price estimates until the dataset source, license, coverage, units and player-name matching have been checked.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
 
-## Future improvements
+## Quality checks\n\nA GitHub Actions workflow runs the Python unit tests on pushes to the upgrade branch and pull requests targeting `main`. Run the same checks locally with `python -m pytest -q`.\n\n## Future improvements
 
 - Add automated data validation and a reproducible dependency file.
 - Expand model evaluation across additional seasons and match conditions.
