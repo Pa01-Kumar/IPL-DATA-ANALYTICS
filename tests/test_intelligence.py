@@ -46,11 +46,17 @@ def test_role_categories_are_assigned():
          "bowling_impact": 70, "combined_impact": 70},
         {"player": "Allrounder", "role": "All-rounder", "batting_impact": 55,
          "bowling_impact": 50, "combined_impact": 65},
+        {"player": "Batting AR", "role": "Batting all-rounder", "batting_impact": 55,
+         "bowling_impact": 35, "combined_impact": 65},
+        {"player": "Bowling AR", "role": "Bowling all-rounder", "batting_impact": 25,
+         "bowling_impact": 60, "combined_impact": 65},
     ])
     ranked = franchise_fit_scores(
         players, {"Batter": 1, "Bowler": 1, "All-rounder": 1}
     )
     assert set(ranked["fit_category"]) == {"Batter", "Bowler", "All-rounder"}
+    assert set(ranked.loc[ranked["player"].isin(["Allrounder", "Batting AR", "Bowling AR"]),
+                          "fit_category"]) == {"All-rounder"}
 
 
 
