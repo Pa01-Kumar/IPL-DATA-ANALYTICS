@@ -7,7 +7,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from src.intelligence import load_player_intelligence, franchise_fit_scores
 
 st.set_page_config(page_title="IPL Intelligence", page_icon="🏏", layout="wide")
@@ -29,7 +35,6 @@ hr { border-color:#29394e; }
 </style>
 """, unsafe_allow_html=True)
 
-ROOT   = Path(__file__).resolve().parent.parent
 DATA   = ROOT / "data" / "processed"
 MODELS = ROOT / "models"
 
@@ -351,7 +356,7 @@ elif page == "Player Shortlist":
     st.title("Player Shortlist & Franchise Fit")
     st.caption("Discover players whose historical performance matches a hypothetical squad-building brief.")
     players = load_player_intelligence()
-    st.info("This is a statistical shortlist, not an official team requirement, transfer recommendation or auction-price prediction.")
+    st.info("This is a statistical shortlist based on historical performance, not an official team requirement or transfer recommendation.")
     c1, c2, c3 = st.columns(3)
     batter_need = c1.slider("Batting priority", 0.0, 1.0, 0.8, 0.05)
     bowler_need = c2.slider("Bowling priority", 0.0, 1.0, 0.8, 0.05)
