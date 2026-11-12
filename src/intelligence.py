@@ -76,6 +76,12 @@ def auction_dataset_status(path: Path = AUCTION_FILE,
         return False, "Auction history is missing required columns: " + ", ".join(sorted(missing))
     if metadata.get("verified") is not True:
         return False, "Auction data is not manually verified in its provenance manifest."
+    review_flags = ("sold_only", "currency_reviewed", "coverage_reviewed",
+                    "player_matching_reviewed", "duplicate_reviewed", "reuse_rights_reviewed")
+    if any(metadata.get(flag) is not True for flag in review_flags):
+        return False, "Manifest must confirm sold-only records, currency, coverage, player matching, duplicates and reuse rights."
+    if metadata.get("price_unit_after_conversion") != "INR lakh":
+        return False, "Manifest must confirm that sold prices are normalized to INR lakh."
     sources = metadata.get("sources", [])
     if not sources or any(not all(s.get(k) for k in ("name", "url", "license", "accessed_on"))
                           for s in sources):
