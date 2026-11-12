@@ -55,6 +55,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<AnyRow | null>(null);
+  async function openPlayer(name: string) {
+    try {
+      setSelectedPlayer(await get<AnyRow>("/api/players/" + encodeURIComponent(name)));
+    } catch {
+      setError("Could not load the selected player profile.");
+    }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -95,13 +103,13 @@ export default function Home() {
         {error && <div className="error-banner">{error}</div>}
         {loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
           {page === "Overview" && <Overview data={overview}/>}
-          {page === "Players" && <Players rows={filteredPlayers} search={search} setSearch={setSearch} role={role} setRole={setRole}/>}
+          {page === "Players" && <Players rows={filteredPlayers} search={search} setSearch={setSearch} role={role} setRole={setRole} onSelect={openPlayer}/>}
           {page === "Teams" && <Teams rows={teams} teamA={teamA} teamB={teamB} setTeamA={setTeamA} setTeamB={setTeamB} compare={compare} result={comparison}/>}
           {page === "Venues" && <Venues rows={venues}/>}
           {page === "Matchups" && <Matchups/>}
-          {page === "Impact" && <Players rows={players} search={search} setSearch={setSearch} role={role} setRole={setRole} impact/>}
+          {page === "Impact" && <Players rows={players} search={search} setSearch={setSearch} role={role} setRole={setRole} impact onSelect={openPlayer}/>}
           {page === "Win Probability" && <WinProbability/>}
-          {page === "Franchise Fit" && <Shortlist rows={shortlist}/>}
+          {page === "Franchise Fit" && <Shortlist rows={shortlist}/>}\n          {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)}/>}
         </>}
         <footer className="footer"><span>IPL INTELLIGENCE © 2026</span><span>BUILT ON HISTORICAL CRICSHEET DATA · NOT A LIVE FEED</span></footer>
       </div>
@@ -119,10 +127,10 @@ function Overview({data}: {data: AnyRow}) {
     <section className="panel"><SectionTitle eyebrow="IMPACT INDEX" title="Top impact players" detail="Project-defined combined impact score."/><div className="impact-list">{data.topImpact.map((p:AnyRow,i:number)=><div className="impact-row" key={p.player}><span>{i+1}</span><div><b>{p.player}</b><small>{p.role}</small></div><strong>{num(p.combined_impact,2)}</strong></div>)}</div></section></div></>;
 }
 
-function Players({rows,search,setSearch,role,setRole,impact=false}:{rows:AnyRow[];search:string;setSearch:(s:string)=>void;role:string;setRole:(s:string)=>void;impact?:boolean}) {
+function Players({rows,search,setSearch,role,setRole,impact=false,onSelect}:{rows:AnyRow[];search:string;setSearch:(s:string)=>void;role:string;setRole:(s:string)=>void;impact?:boolean;onSelect:(name:string)=>void}) {
   return <><SectionTitle eyebrow={impact?"PLAYER PERFORMANCE INDEX":"PLAYER DIRECTORY"} title={impact?"Impact rankings":"Find your next match-winner"} detail={impact?"Compare the project's historical player impact scores.":"Explore player profiles through batting, bowling and combined performance."}/>
     <div className="toolbar"><div className="search-box"><Search size={17}/><input placeholder="Search player name…" value={search} onChange={e=>setSearch(e.target.value)}/></div><select value={role} onChange={e=>setRole(e.target.value)}><option>All</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>Opener</option><option>Finisher</option></select><span className="result-count">{rows.length} PLAYERS</span></div>
-    <div className="player-grid">{rows.slice(0,80).map((p,i)=><article className="player-card" key={p.player}><div className="player-card-top"><span className="player-index">PLAYER / {String(i+1).padStart(2,"0")}</span><span className="role-pill">{p.role||"Player"}</span></div><div className="player-avatar">{String(p.player).split(" ").map((x:string)=>x[0]).join("").slice(0,2)}</div><h3>{p.player}</h3><div className="player-stat-grid"><div><b>{fmt(p.runs)}</b><small>RUNS</small></div><div><b>{num(p.average)}</b><small>AVERAGE</small></div><div><b>{num(p.strike_rate)}</b><small>STRIKE RATE</small></div></div><div className="player-card-foot"><span>IMPACT SCORE</span><b>{num(p.combined_impact,2)}</b></div></article>)}</div>
+    <div className="player-grid">{rows.slice(0,80).map((p,i)=><button type="button" className="player-card player-card-button" key={p.player} onClick={() => onSelect(p.player)}><div className="player-card-top"><span className="player-index">PLAYER / {String(i+1).padStart(2,"0")}</span><span className="role-pill">{p.role||"Player"}</span></div><div className="player-avatar">{String(p.player).split(" ").map((x:string)=>x[0]).join("").slice(0,2)}</div><h3>{p.player}</h3><div className="player-stat-grid"><div><b>{fmt(p.runs)}</b><small>RUNS</small></div><div><b>{num(p.average)}</b><small>AVERAGE</small></div><div><b>{num(p.strike_rate)}</b><small>STRIKE RATE</small></div></div><div className="player-card-foot"><span>IMPACT SCORE</span><b>{num(p.combined_impact,2)}</b></div></article>)}</div>
   </>;
 }
 
@@ -150,3 +158,23 @@ function Shortlist({rows}:{rows:AnyRow[]}) {
 function WinProbability() {
   return <><SectionTitle eyebrow="MODEL CENTRE" title="Win probability." detail="Historical chase-state model. Interactive match replay will connect to the saved Logistic Regression artifact in the next integration pass."/><div className="model-placeholder"><Gauge size={34}/><h3>Historical match replay</h3><p>The existing model and ball-by-ball data are retained. The new match-centre visualisation is being connected to the Python inference layer.</p><span>MODEL ARTIFACT · winprob_logistic.pkl</span></div></>;
 }
+
+function PlayerModal({player,onClose}:{player:AnyRow;onClose:()=>void}) {
+  return <div className="modal-backdrop" onClick={onClose}>
+    <section className="modal-card" onClick={e=>e.stopPropagation()}>
+      <button className="modal-close" onClick={onClose}><X size={18}/></button>
+      <span className="eyebrow">PLAYER DOSSIER</span><h2>{player.player}</h2>
+      <p className="modal-role">{player.role || "IPL Player"}</p>
+      <div className="modal-stats">
+        <div><b>{fmt(player.runs)}</b><small>RUNS</small></div>
+        <div><b>{num(player.average)}</b><small>AVERAGE</small></div>
+        <div><b>{num(player.strike_rate)}</b><small>STRIKE RATE</small></div>
+        <div><b>{fmt(player.wickets)}</b><small>WICKETS</small></div>
+        <div><b>{num(player.economy)}</b><small>ECONOMY</small></div>
+        <div><b>{num(player.combined_impact)}</b><small>IMPACT</small></div>
+      </div>
+      <p className="modal-note">Historical career aggregates from the checked-in IPL dataset. Missing values are not estimated.</p>
+    </section>
+  </div>;
+}
+
