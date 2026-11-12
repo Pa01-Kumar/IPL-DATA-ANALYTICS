@@ -4,6 +4,8 @@
 
 - IPL official auction pages: https://www.iplt20.com/auction/2026/sold
 - Salary Sport, IPL 2025 auction: https://salarysport.com/cricket/ipl/auction/2025/
+- Foridur3210's [IPL IMB381IPL2013.csv](https://github.com/Foridur3210/IPL-Dataset-Player-price-prediction/blob/master/IPL%20IMB381IPL2013.csv) has 130 rows and historical auction years, but its sold-price unit and original reuse terms need confirmation before use.
+- [2023 IPL squad/auction dataset](https://github.com/ramdhote05/IPL-AUCTION-DATA-ANALYSIS) contains rupee-crore cost fields alongside retained-player rows; exclude retained entries and independently verify sold status and license before import.
 - Outside Edge historical acquisition analysis: https://github.com/outside-edge/ipl_auction (its README describes Kaggle, Wikipedia and IPL official sources, and notes a 2024 data gap)
 - Times of India, IPL 2025 sold-player list: https://timesofindia.indiatimes.com/sports/cricket/ipl/top-stories/ipl-auction-2025-full-list-of-sold-players-of-all-teams/articleshow/115618338.cms
 
