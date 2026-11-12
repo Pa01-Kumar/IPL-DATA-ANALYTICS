@@ -203,7 +203,8 @@ python -m pip install requests seaborn jupyter pytest
 From the repository root, run:
 
 ```bash
-python -m pytest -q\nstreamlit run app/dashboard.py
+python -m pytest -q
+streamlit run app/dashboard.py
 ```
 
 Streamlit will print a local address in the terminal, usually `http://localhost:8501`.
@@ -237,7 +238,11 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
 
-## Quality checks\n\nA GitHub Actions workflow runs the Python unit tests on pushes to the upgrade branch and pull requests targeting `main`. Run the same checks locally with `python -m pytest -q`.\n\n## Future improvements
+## Quality checks
+
+A GitHub Actions workflow runs the Python unit tests on pushes to the upgrade branch and pull requests targeting `main`. Run the same checks locally with `python -m pytest -q`.
+
+## Future improvements
 
 - Add automated data validation and a reproducible dependency file.
 - Expand model evaluation across additional seasons and match conditions.
