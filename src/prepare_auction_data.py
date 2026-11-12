@@ -42,6 +42,8 @@ def prepare_auction_csv(
     price_unit: str,
     accessed_on: str,
 ) -> tuple[int, Path]:
+    if price_unit not in PRICE_TO_LAKH:
+        raise ValueError(f"Unsupported price unit: {price_unit}")
     raw = pd.read_csv(source)
     selected = {
         key: _find_column(raw.columns, aliases)
@@ -83,6 +85,12 @@ def prepare_auction_csv(
             "Set verified=true only after manual review."
         ),
         "price_unit_after_conversion": "INR lakh",
+        "sold_only": False,
+        "currency_reviewed": False,
+        "coverage_reviewed": False,
+        "player_matching_reviewed": False,
+        "duplicate_reviewed": False,
+        "reuse_rights_reviewed": False,
         "sources": [{
             "name": source_name,
             "url": source_url,
