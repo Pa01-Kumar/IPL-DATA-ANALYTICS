@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/Framework-Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
   <img src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?logo=scikitlearn&logoColor=white" alt="Scikit-learn">
   <img src="https://img.shields.io/badge/Data-Cricsheet-168AAD" alt="Cricsheet">
@@ -29,7 +29,7 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 - **Coverage in the processed dataset:** 2008–2026
 - **Data source:** [Cricsheet](https://cricsheet.org/)
 - **Dashboard:** Streamlit, with eight analytical pages
-- **Machine learning:** Logistic Regression, StandardScaler, and Isotonic Regression calibration
+- **Machine learning:** Logistic Regression and StandardScaler for the dashboard model; Isotonic Regression is explored separately in the modelling notebook
 - **Main predictive task:** Estimate the chasing team's win probability as a match progresses
 
 > **Scope note:** The dashboard analyses historical match data. It is not connected to a live match feed. The Win Probability page replays a selected historical chase ball by ball.
@@ -84,7 +84,7 @@ The Matchup Explorer uses batter-bowler aggregates to show balls faced, runs, di
 
 ## Win Probability model
 
-The Win Probability model estimates the probability that the team batting second will win, based on the state of the chase after each delivery.
+The Win Probability model estimates the probability that the team batting second will win, based on the state of the chase after each delivery. The dashboard loads the saved, uncalibrated Logistic Regression artifact. The notebook also evaluates a separately calibrated experiment.
 
 **Input features**
 
@@ -97,10 +97,11 @@ The Win Probability model estimates the probability that the team batting second
 
 **Model pipeline**
 
+The notebook documents two evaluation paths:
 1. Train a Logistic Regression classifier on historical chase states from **2008–2022**.
-2. Use the **2023** season as a separate calibration set.
-3. Apply Isotonic Regression to calibrate the model's predicted probabilities.
-4. Evaluate the calibrated model on the **2024–2025** holdout seasons.
+2. Evaluate an uncalibrated model on later seasons; this is the model artifact loaded by the dashboard.
+3. In a separate experiment, use **2023** as a calibration set and apply Isotonic Regression.
+4. Evaluate that calibrated experiment on the **2024–2025** holdout seasons.
 
 ### Reported holdout performance
 
@@ -161,7 +162,7 @@ IPL-DATA-ANALYTICS/
 
 ### Requirements
 
-- Python 3.9 or later
+- Python 3.11 or later
 - pip
 
 ### 1. Clone the repository
@@ -191,13 +192,13 @@ source .venv/bin/activate
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install streamlit pandas numpy matplotlib scikit-learn
+python -m pip install -r requirements.txt
 ```
 
 For running the data-download script or exploring the notebooks, also install:
 
 ```bash
-python -m pip install requests seaborn jupyter pytest
+# The requirements file already includes the data and notebook dependencies.
 ```
 
 ### 4. Launch the dashboard
@@ -232,7 +233,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 ## Limitations and interpretation
 
 - Win Probability is a model estimate, not a guarantee of the match result.
-- The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
+- The reported 78.7% accuracy and 0.887 ROC-AUC apply to the uncalibrated saved dashboard model's 2023–2025 evaluation. The separate calibrated notebook experiment reports 82.0% accuracy and 0.908 ROC-AUC on 2024–2025.
 - The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
 - The project does not estimate player prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
 - The application currently works with historical data and does not ingest live scores.
