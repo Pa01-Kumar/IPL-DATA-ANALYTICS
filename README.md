@@ -17,7 +17,7 @@
   <a href="#run-the-dashboard-locally">Run Locally</a>
 </p>
 
-# IPL Intelligence — Cricket Analytics & Auction Strategy
+# IPL Intelligence — Cricket Analytics & Player Strategy
 
 A premium dark sports analytics platform for cricket fans and analysts, combining Python-based match intelligence, player performance analysis, hypothetical franchise recruitment fit, and player shortlisting.
 
@@ -28,7 +28,7 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 - **Dataset:** 295,557 delivery records across 1,243 matches
 - **Coverage in the processed dataset:** 2008–2026
 - **Data source:** [Cricsheet](https://cricsheet.org/)
-- **Dashboard:** Streamlit, with nine analytical pages
+- **Dashboard:** Streamlit, with eight analytical pages
 - **Machine learning:** Logistic Regression, StandardScaler, and Isotonic Regression calibration
 - **Main predictive task:** Estimate the chasing team's win probability as a match progresses
 
@@ -36,7 +36,7 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 
 ## Dashboard
 
-The Streamlit application contains nine sections:
+The Streamlit application contains eight sections:
 
 | Page | What it shows |
 |---|---|
@@ -232,9 +232,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 - Win Probability is a model estimate, not a guarantee of the match result.
 - The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
 - The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
-- The Auction Value score is a comparative metric designed for this project; it does not use actual auction transaction prices.
-- The project intentionally does not predict auction prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
-- Cricsheet match data is not auction transaction data. Do not interpret a schema example as a real record or report price estimates until the dataset source, license, coverage, units and player-name matching have been checked.
+- The project does not estimate player prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
 
