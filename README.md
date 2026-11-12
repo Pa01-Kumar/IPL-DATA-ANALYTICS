@@ -195,7 +195,7 @@ python -m pip install streamlit pandas numpy matplotlib scikit-learn
 For running the data-download script or exploring the notebooks, also install:
 
 ```bash
-python -m pip install requests seaborn jupyter
+python -m pip install requests seaborn jupyter pytest
 ```
 
 ### 4. Launch the dashboard
@@ -232,7 +232,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 - The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
 - The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
 - The Auction Value score is a comparative metric designed for this project; it does not use actual auction transaction prices.
-- The Auction Price Lab is intentionally disabled until verified auction transactions are supplied in `data/processed/auction_history.csv`. Required columns are `auction_year` and `sold_price_lakh`; additional pre-auction player attributes can be used as predictors. Franchise/team assignment is excluded from the price model to avoid using post-sale information. The latest auction year is held out for temporal evaluation.
+- The Auction Price Lab is intentionally disabled until verified auction transactions and a provenance manifest are supplied. See `data/processed/AUCTION_DATA_README.md`. Only allowlisted pre-auction attributes are used; post-sale team/franchise information is excluded. The latest auction year is held out for temporal evaluation.
 - Cricsheet match data is not auction transaction data. Do not interpret a schema example as a real record or report price estimates until the dataset source, license, coverage, units and player-name matching have been checked.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
