@@ -265,7 +265,7 @@ elif page == "Matchup Explorer":
             ax.grid(alpha=0.3, axis="x")
             st.pyplot(fig)
 
-# ==================== PAGE 6: Auction Value ====================
+# ==================== PAGE 6: Player Impact ====================
 elif page == "Player Impact":
     st.title("Player Impact — performance ranking")
     imp = load_impact()
