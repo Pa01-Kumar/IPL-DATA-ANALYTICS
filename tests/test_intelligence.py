@@ -82,7 +82,7 @@ def test_prepare_auction_csv_normalizes_price_and_drops_post_sale_team(tmp_path)
 def test_prepare_auction_csv_rejects_unknown_price_unit(tmp_path):
     source = tmp_path / "source.csv"
     pd.DataFrame([{"player": "A", "auction_year": 2022, "sold_price": 10}]).to_csv(source, index=False)
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError):
         prepare_auction_csv(
             source, tmp_path / "out.csv", source_name="Example",
             source_url="https://example.org", price_unit="usd",
