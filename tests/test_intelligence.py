@@ -1,5 +1,12 @@
+from io import BytesIO
+from pathlib import Path
+import zipfile
+
 import pandas as pd
 import pytest
+
+from src.build_consolidated import build_consolidated
+from src.download_data import safe_extract_zip
 
 from src.intelligence import franchise_fit_scores, load_player_intelligence
 
@@ -106,3 +113,40 @@ def test_load_player_intelligence_rejects_duplicate_player_rows(tmp_path):
 def test_load_player_intelligence_reports_missing_files(tmp_path):
     with pytest.raises(FileNotFoundError, match="Required player dataset"):
         load_player_intelligence(data_dir=tmp_path)
+
+
+
+def test_safe_extract_zip_extracts_valid_archive(tmp_path):
+    archive_buffer = BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.writestr("match_123.csv", "ball,batter\n0.1,Player A\n")
+    count = safe_extract_zip(archive_buffer.getvalue(), tmp_path)
+    assert count == 1
+    assert (tmp_path / "match_123.csv").is_file()
+
+
+def test_safe_extract_zip_rejects_path_traversal(tmp_path):
+    archive_buffer = BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.writestr("../outside.txt", "not allowed")
+    with pytest.raises(ValueError, match="Unsafe archive member path"):
+        safe_extract_zip(archive_buffer.getvalue(), tmp_path)
+    assert not (tmp_path.parent / "outside.txt").exists()
+
+
+def test_build_consolidated_combines_match_files(tmp_path):
+    pd.DataFrame({"ball": ["0.1"], "batter": ["Player A"]}).to_csv(
+        tmp_path / "match_1.csv", index=False)
+    pd.DataFrame({"ball": ["0.2"], "batter": ["Player B"]}).to_csv(
+        tmp_path / "match_2.csv", index=False)
+    pd.DataFrame({"meta": ["ignore"]}).to_csv(
+        tmp_path / "match_1_info.csv", index=False)
+    output = build_consolidated(tmp_path)
+    result = pd.read_csv(output, dtype={"match_id": str})
+    assert len(result) == 2
+    assert set(result["match_id"]) == {"match_1", "match_2"}
+
+
+def test_build_consolidated_reports_empty_directory(tmp_path):
+    with pytest.raises(FileNotFoundError, match="No per-match delivery CSV"):
+        build_consolidated(tmp_path)
