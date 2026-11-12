@@ -8,8 +8,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from pathlib import Path
+from src.intelligence import load_player_intelligence, franchise_fit_scores, auction_dataset_status, train_auction_price_model
 
-st.set_page_config(page_title="IPL Analytics", page_icon="🏏", layout="wide")
+st.set_page_config(page_title="IPL Intelligence", page_icon="🏏", layout="wide")
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+.stApp { background:radial-gradient(ellipse at 8% 0%,#1c2a3d 0%,#0b111b 42%,#090e16 100%); color:#eef2f7; font-family:'DM Sans',sans-serif; }
+h1,h2,h3 { font-family:'Space Grotesk',sans-serif !important; letter-spacing:-.035em; }
+h1 { color:#f6f8fb; font-weight:700 !important; }
+[data-testid="stMetric"] { background:linear-gradient(145deg,#172436,#111a27); border:1px solid #29394e; padding:16px 18px; border-radius:15px; }
+[data-testid="stMetricLabel"] { color:#aab8c9 !important; }
+[data-testid="stMetricValue"] { color:#e9f3ff !important; }
+section[data-testid="stSidebar"] { background:#0c1420; border-right:1px solid #233247; }
+section[data-testid="stSidebar"] * { color:#e8eef7; }
+.stButton>button,.stDownloadButton>button { border-radius:10px; border:1px solid #9fca4c; background:#c8f169; color:#10170a; font-weight:700; }
+div[data-testid="stDataFrame"] { border:1px solid #29394e; border-radius:12px; overflow:hidden; }
+[data-testid="stCaptionContainer"] { color:#9aa7b8; }
+hr { border-color:#29394e; }
+</style>
+""", unsafe_allow_html=True)
 
 ROOT   = Path(__file__).resolve().parent.parent
 DATA   = ROOT / "data" / "processed"
@@ -69,10 +87,13 @@ def compute_wp_curve(match_id):
     return c
 
 # ---------------- sidebar ----------------
-st.sidebar.title("🏏 IPL Analytics")
+st.sidebar.markdown("# 🏏 IPL INTELLIGENCE")
+st.sidebar.caption("CRICKET DATA • PLAYER INTELLIGENCE • STRATEGY")
+st.sidebar.markdown("---")
 page = st.sidebar.radio("Page", [
     "Overview", "Player Profile", "Team Comparison", "Venue Insights",
     "Matchup Explorer", "Auction Value", "Win Probability",
+    "Franchise Fit", "Auction Price Lab",
 ])
 
 # ==================== PAGE 1: Overview ====================
@@ -311,6 +332,47 @@ elif page == "Win Probability":
                     "runs_needed", "balls_left", "wickets_left", "wp"]
             st.dataframe(c[cols].round(3), use_container_width=True)
 
+# ==================== PAGE 8: Franchise Fit ====================
+elif page == "Franchise Fit":
+    st.title("Franchise Intelligence")
+    st.caption("Explore player fit using historical impact and analyst-defined squad priorities.")
+    players = load_player_intelligence()
+    st.info("Decision-support ranking only — not an official franchise squad assessment. Set role priorities for a hypothetical recruitment brief.")
+    c1, c2, c3 = st.columns(3)
+    batter_need = c1.slider("Batting priority", 0.0, 1.0, 0.8, 0.05)
+    bowler_need = c2.slider("Bowling priority", 0.0, 1.0, 0.8, 0.05)
+    allrounder_need = c3.slider("All-rounder priority", 0.0, 1.0, 1.0, 0.05)
+    ranked = franchise_fit_scores(players, {"Batter": batter_need, "Bowler": bowler_need, "All-rounder": allrounder_need})
+    top_n = st.slider("Players to shortlist", 5, 50, 15, key="fit_top_n")
+    st.dataframe(ranked.head(top_n)[["player", "fit_category", "franchise_fit_score", "combined_impact", "batting_impact", "bowling_impact", "runs", "wickets"]].round(2), use_container_width=True)
+    st.download_button("Download shortlist CSV", ranked.head(top_n).to_csv(index=False).encode("utf-8"), file_name="ipl_franchise_fit_shortlist.csv", mime="text/csv")
+
+# ==================== PAGE 9: Auction Price Lab ====================
+elif page == "Auction Price Lab":
+    st.title("Auction Price Intelligence")
+    st.caption("A transparent price-model workspace — no invented auction prices.")
+    ready, message = auction_dataset_status()
+    if not ready:
+        st.warning(message)
+        st.markdown("**Why this is gated:** Cricsheet provides match and delivery performance, not a complete record of auction bids and final sold prices. A price model trained without real transaction outcomes would be misleading.")
+        st.markdown("**Required file:** `data/processed/auction_history.csv`")
+        st.code("auction_year,sold_price_lakh,role,age,overseas,runs,average,strike_rate,wickets,economy,franchise")
+        st.caption("Schema illustration only. Replace it with verified historical records and document source, license and player matching.")
+    else:
+        st.success(message)
+        if st.button("Train and evaluate price model"):
+            try:
+                with st.spinner("Training on earlier auctions and testing on the latest season..."):
+                    model, metrics = train_auction_price_model()
+                st.subheader(f"Temporal holdout: {metrics['holdout_year']}")
+                a, b, c = st.columns(3)
+                a.metric("Mean absolute error", f"₹{metrics['mae_lakh']:.1f} lakh")
+                b.metric("Root mean squared error", f"₹{metrics['rmse_lakh']:.1f} lakh")
+                c.metric("Test records", metrics["records_test"])
+                st.caption("Metrics are in INR lakh. Historical holdout evaluation is not a guarantee of future auction prices.")
+            except Exception as exc:
+                st.error(f"Model could not be trained: {exc}")
+
 # ---------------- footer ----------------
 st.sidebar.markdown("---")
-st.sidebar.caption("Built on Cricsheet ball-by-ball data · 2008–2025")
+st.sidebar.caption("Built on Cricsheet historical data · 2008–2026")
