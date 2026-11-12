@@ -351,6 +351,8 @@ elif page == "Player Shortlist":
     minimum_impact = c5.slider("Minimum combined impact", 0.0, 100.0, 0.0, 1.0)
     shortlist = shortlist[shortlist["combined_impact"] >= minimum_impact].head(top_n)
     st.metric("Players shortlisted", len(shortlist))
+    if shortlist.empty:
+        st.warning("No players match these filters. Lower the impact threshold or select more roles.")
     display_columns = [col for col in [
         "player", "fit_category", "franchise_fit_score", "combined_impact",
         "batting_impact", "bowling_impact", "runs", "average", "strike_rate",
