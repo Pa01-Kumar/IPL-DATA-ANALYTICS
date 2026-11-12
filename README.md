@@ -28,7 +28,7 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 - **Dataset:** 295,557 delivery records across 1,243 matches
 - **Coverage in the processed dataset:** 2008–2026
 - **Data source:** [Cricsheet](https://cricsheet.org/)
-- **Dashboard:** Streamlit, with seven analytical pages
+- **Dashboard:** Streamlit, with nine analytical pages
 - **Machine learning:** Logistic Regression, StandardScaler, and Isotonic Regression calibration
 - **Main predictive task:** Estimate the chasing team's win probability as a match progresses
 
@@ -36,7 +36,7 @@ The project uses Cricsheet ball-by-ball data and presents its findings through a
 
 ## Dashboard
 
-The Streamlit application contains seven sections:
+The Streamlit application contains nine sections:
 
 | Page | What it shows |
 |---|---|
