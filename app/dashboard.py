@@ -92,9 +92,9 @@ def compute_wp_curve(match_id):
 
     model_features = wp_pkl.get("features", FEATURES)
     X = wp_pkl["scaler"].transform(c[model_features].fillna(0))
-    raw = wp_pkl["model"].predict_proba(X)[:, 1]
-    cal = wp_pkl["iso"].predict(raw) if "iso" in wp_pkl else raw
-    c["wp"] = cal
+    # The checked-in dashboard artifact is the uncalibrated Logistic Regression
+    # model; the isotonic calibration experiment is documented separately.
+    c["wp"] = wp_pkl["model"].predict_proba(X)[:, 1]
     c["ball_num"] = 120 - c["balls_left"]
     return c
 
