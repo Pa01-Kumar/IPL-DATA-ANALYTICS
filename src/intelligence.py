@@ -1,15 +1,42 @@
 """IPL Intelligence player performance and franchise-fit analytics."""
 from __future__ import annotations
 from typing import Mapping
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
-def load_player_intelligence() -> pd.DataFrame:
-    batting = pd.read_csv(PROCESSED / "batting_stats.csv").rename(columns={"striker": "player"})
-    bowling = pd.read_csv(PROCESSED / "bowling_stats.csv").rename(columns={"bowler": "player"})
-    impact = pd.read_csv(PROCESSED / "player_impact.csv")
+def load_player_intelligence(data_dir=None) -> pd.DataFrame:
+    """Load and join the three processed player tables with explicit schema checks.
+
+    data_dir is injectable for tests; production defaults to data/processed.
+    """
+    data_dir = Path(data_dir) if data_dir is not None else PROCESSED
+    batting_path = data_dir / "batting_stats.csv"
+    bowling_path = data_dir / "bowling_stats.csv"
+    impact_path = data_dir / "player_impact.csv"
+    for path in (batting_path, bowling_path, impact_path):
+        if not path.is_file():
+            raise FileNotFoundError(f"Required player dataset not found: {path}")
+
+    batting = pd.read_csv(batting_path).rename(columns={"striker": "player"})
+    bowling = pd.read_csv(bowling_path).rename(columns={"bowler": "player"})
+    impact = pd.read_csv(impact_path)
+    required = {
+        "batting": (batting, {"player", "runs", "average", "strike_rate", "innings",
+                              "SR_Powerplay", "SR_Middle", "SR_Death"}),
+        "bowling": (bowling, {"player", "wickets", "economy", "bowl_sr", "legal_balls"}),
+        "impact": (impact, {"player", "role", "batting_impact", "bowling_impact",
+                            "combined_impact"}),
+    }
+    for label, (frame, columns) in required.items():
+        missing = columns - set(frame.columns)
+        if missing:
+            raise ValueError(f"{label} dataset is missing columns: {', '.join(sorted(missing))}")
+        if frame["player"].duplicated().any():
+            raise ValueError(f"{label} dataset contains duplicate player rows")
+
     # Select only performance columns: keep the impact table's role column authoritative.
     result = impact.merge(
         batting[["player", "runs", "average", "strike_rate", "innings",
