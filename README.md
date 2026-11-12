@@ -19,7 +19,7 @@
 
 # IPL Intelligence — Cricket Analytics & Auction Strategy
 
-A premium dark sports analytics platform for cricket fans and analysts, combining Python-based match intelligence, player performance analysis, hypothetical franchise recruitment fit, and an auction-price modelling workspace.
+A premium dark sports analytics platform for cricket fans and analysts, combining Python-based match intelligence, player performance analysis, hypothetical franchise recruitment fit, and player shortlisting.
 
 The project uses Cricsheet ball-by-ball data and presents its findings through an interactive Streamlit dashboard.
 
@@ -45,10 +45,9 @@ The Streamlit application contains nine sections:
 | **Team Comparison** | Head-to-head results between two selected teams |
 | **Venue Insights** | Venue-level first-innings scoring and chasing outcomes |
 | **Matchup Explorer** | Batter-versus-bowler records for qualifying matchups |
-| **Auction Value** | Player impact rankings based on a project-defined batting and bowling score |
+| **Player Impact** | Player impact rankings based on a project-defined batting and bowling score |
 | **Win Probability** | Ball-by-ball estimated chase win probability for a selected historical match |
-| **Franchise Fit** | Rank players against analyst-defined batting, bowling and all-rounder priorities |
-| **Auction Price Lab** | Train and evaluate a price model only after verified historical auction transactions are supplied |
+| **Player Shortlist** | Filter and rank players against hypothetical batting, bowling and all-rounder priorities; export a recruitment shortlist |
 
 ### Win Probability preview
 
@@ -75,7 +74,7 @@ The raw source files are not included in the repository; they are excluded throu
 
 Batters are assigned project-defined roles using their batting position, innings patterns, and phase-specific performance. The implemented categories include **Opener, Anchor, Finisher, Middle-order, and Bowler**.
 
-The Auction Value page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled). The Franchise Fit page applies user-defined role priorities to these historical impact indicators. Its score is a shortlist aid, not a real franchise scouting decision.
+The Player Impact page displays a comparative impact score. The score combines normalised performance indicators and a reliability factor based on opportunities (balls faced or legal balls bowled). The Player Shortlist page applies user-defined role priorities to these historical impact indicators. Its score is a shortlist aid, not a real franchise scouting decision.
 
 **Interpretation:** This is a project-defined performance score, not an estimate of actual IPL auction prices or a financial valuation. Franchise-fit rankings are similarly heuristic and should be reviewed by analysts.
 
@@ -152,8 +151,7 @@ IPL-DATA-ANALYTICS/
 ├── src/
 │   ├── build_consolidated.py
 │   ├── download_data.py
-│   ├── intelligence.py
-│   └── prepare_auction_data.py
+│   └── intelligence.py
 └── .gitignore
 ```
 
@@ -235,7 +233,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 - The reported 82.0% accuracy and 0.908 ROC-AUC apply to the calibrated 2024–2025 holdout evaluation described above.
 - The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
 - The Auction Value score is a comparative metric designed for this project; it does not use actual auction transaction prices.
-- The Auction Price Lab is intentionally disabled until verified auction transactions and a provenance manifest are supplied. See `data/processed/AUCTION_DATA_README.md` for the source review checklist and `src/prepare_auction_data.py` for the CSV importer. The importer creates an unverified manifest by default; only a human-reviewed manifest can enable training. Only allowlisted pre-auction attributes are used; post-sale team/franchise information is excluded. The latest auction year is held out for temporal evaluation.
+- The project intentionally does not predict auction prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
 - Cricsheet match data is not auction transaction data. Do not interpret a schema example as a real record or report price estimates until the dataset source, license, coverage, units and player-name matching have been checked.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
