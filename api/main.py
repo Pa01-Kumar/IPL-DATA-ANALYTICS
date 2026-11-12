@@ -150,6 +150,75 @@ def shortlist(batting_priority: float = 0.8, bowling_priority: float = 0.8,
     ranked = ranked[ranked["fit_category"].isin(selected)].head(limit)
     return records(ranked)
 
+
+@app.get("/api/win-probability/matches")
+def win_probability_matches():
+    matches = csv("matches.csv").dropna(subset=["winner"]).copy()
+    matches["label"] = (
+        matches["team1"].astype(str) + " vs " + matches["team2"].astype(str)
+        + " · " + matches["date"].astype(str) + " · " + matches["match_id"].astype(str)
+    )
+    return records(matches[["match_id", "label", "winner", "team1", "team2", "date"]]
+                   .sort_values("date", ascending=False))
+
+
+@app.get("/api/win-probability/{match_id}")
+def win_probability(match_id: str):
+    delivery_path = DATA / "cleaned_deliveries.csv"
+    model_path = ROOT / "models" / "winprob_logistic.pkl"
+    if not delivery_path.exists() or not model_path.exists():
+        raise HTTPException(status_code=503, detail="Win probability data or model unavailable")
+    try:
+        deliveries = pd.read_csv(delivery_path, dtype={"match_id": str}, low_memory=False)
+        model_info = joblib.load(model_path)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Unable to load win probability resources: {exc}")
+    md = deliveries[deliveries["match_id"].astype(str) == str(match_id)].copy()
+    if md.empty or not (md["innings"] == 1).any() or not (md["innings"] == 2).any():
+        raise HTTPException(status_code=404, detail="Match has no complete two-innings delivery record")
+    target = float(md.loc[md["innings"] == 1, "total_runs"].sum()) + 1
+    chase = md[md["innings"] == 2].copy().reset_index(drop=True)
+    chase["runs_needed"] = target - chase["runs_so_far"]
+    chase["balls_left"] = chase["balls_remaining"]
+    chase["wickets_left"] = chase["wickets_in_hand"]
+    balls_bowled = 120 - chase["balls_remaining"]
+    chase["current_rr"] = np.where(balls_bowled > 0, chase["runs_so_far"] * 6 / balls_bowled, 0)
+    chase["required_rr"] = np.where(chase["balls_remaining"] > 0,
+                                    chase["runs_needed"] * 6 / chase["balls_remaining"], 0)
+    chase["rrr_minus_crr"] = chase["required_rr"] - chase["current_rr"]
+    chase["current_rr"] = chase["current_rr"].clip(0, 30)
+    chase["required_rr"] = chase["required_rr"].clip(0, 30)
+    chase["rrr_minus_crr"] = chase["rrr_minus_crr"].clip(-30, 30)
+    chase = chase[(chase["balls_remaining"] >= 0) & (chase["runs_needed"] >= 0)].copy()
+    if chase.empty:
+        raise HTTPException(status_code=404, detail="No valid chase states for this match")
+    features = model_info.get("features", [
+        "runs_needed", "balls_left", "wickets_left",
+        "current_rr", "required_rr", "rrr_minus_crr"
+    ])
+    try:
+        x = model_info["scaler"].transform(chase[features].fillna(0))
+        chase["wp"] = model_info["model"].predict_proba(x)[:, 1]
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Win probability inference failed: {exc}")
+    chase["ball_num"] = 120 - chase["balls_left"]
+    columns = [c for c in [
+        "over", "ball", "batting_team", "runs_so_far", "runs_needed",
+        "balls_left", "wickets_left", "wp", "ball_num", "is_wicket"
+    ] if c in chase.columns]
+    winner_rows = csv("matches.csv")
+    winner_rows = winner_rows[winner_rows["match_id"].astype(str) == str(match_id)]
+    winner = None if winner_rows.empty else winner_rows.iloc[0]["winner"]
+    batting_team = str(chase.iloc[-1]["batting_team"])
+    return {
+        "match_id": str(match_id),
+        "target": int(target),
+        "chasing_team": batting_team,
+        "winner": None if pd.isna(winner) else str(winner),
+        "last_valid_wp": float(chase.iloc[-1]["wp"]),
+        "curve": records(chase[columns]),
+    }
+
 @app.get("/api/matches")
 def matches(limit: int = Query(100, ge=1, le=500)):
     frame = csv("matches.csv").sort_values("date", ascending=False).head(limit)
