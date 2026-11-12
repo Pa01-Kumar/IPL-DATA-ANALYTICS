@@ -20,9 +20,8 @@ def test_all_dashboard_pages_render_without_exceptions():
         "Win Probability",
         "Player Shortlist",
     ]
-    page_selector = app.radio[0]
     for page_name in page_names[1:]:
-        page_selector.set_value(page_name)
+        app.radio[0].set_value(page_name)
         app.run()
         assert not app.exception, (
             f"Dashboard page {page_name!r} raised an exception: "
