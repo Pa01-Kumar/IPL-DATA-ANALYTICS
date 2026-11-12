@@ -174,11 +174,18 @@ cd IPL-DATA-ANALYTICS
 
 ### 2. Create and activate a virtual environment
 
-**Windows (PowerShell or Command Prompt):**
+**Windows PowerShell:**
 
-```bash
+```powershell
 python -m venv .venv
-.venv\\Scripts\\activate
+.\.venv\Scripts\Activate.ps1
+```
+
+**Windows Command Prompt:**
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate.bat
 ```
 
 **macOS / Linux:**
