@@ -1,5 +1,11 @@
 .venv/
+venv/
 __pycache__/
-*.pyc
+*.py[cod]
 .ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+.streamlit/secrets.toml
 data/raw/
