@@ -30,7 +30,10 @@ def write_auction_files(tmp_path, manifest=True):
     pd.DataFrame(rows).to_csv(csv_path,index=False)
     manifest_path = tmp_path/"auction_history_metadata.json"
     if manifest:
-        manifest_path.write_text(json.dumps({"verified":True,"sources":[{
+        manifest_path.write_text(json.dumps({"verified":True,"price_unit_after_conversion":"INR lakh",
+            "sold_only":True,"currency_reviewed":True,"coverage_reviewed":True,
+            "player_matching_reviewed":True,"duplicate_reviewed":True,
+            "reuse_rights_reviewed":True,"sources":[{
             "name":"Test source","url":"https://example.org/data","license":"Test terms",
             "accessed_on":"2026-11-13"}]}),encoding="utf-8")
     return csv_path,manifest_path
