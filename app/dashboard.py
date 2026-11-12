@@ -78,6 +78,8 @@ def compute_wp_curve(match_id):
     c["required_rr"]   = c["required_rr"].clip(0, 30)
     c["rrr_minus_crr"] = c["rrr_minus_crr"].clip(-30, 30)
     c = c[(c["balls_remaining"] >= 0) & (c["runs_needed"] >= 0)].copy()
+    if c.empty:
+        return None
 
     model_features = wp_pkl.get("features", FEATURES)
     X = wp_pkl["scaler"].transform(c[model_features].fillna(0))
@@ -242,6 +244,9 @@ elif page == "Matchup Explorer":
         c1, c2 = st.columns(2)
         batter = c1.selectbox("Batter", sorted(mu["striker"].unique()))
         bowlers = sorted(mu[mu["striker"] == batter]["bowler"].unique())
+        if not bowlers:
+            st.info("No qualifying bowler matchup for this batter.")
+            st.stop()
         bowler = c2.selectbox("Bowler", bowlers)
 
         row = mu[(mu["striker"] == batter) & (mu["bowler"] == bowler)]
