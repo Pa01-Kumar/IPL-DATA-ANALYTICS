@@ -195,12 +195,6 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-For running the data-download script or exploring the notebooks, also install:
-
-```bash
-# The requirements file already includes the data and notebook dependencies.
-```
-
 ### 4. Launch the dashboard
 
 From the repository root, run:
@@ -234,7 +228,7 @@ The notebooks document the subsequent cleaning, analysis, feature engineering, a
 
 - Win Probability is a model estimate, not a guarantee of the match result.
 - The reported 78.7% accuracy and 0.887 ROC-AUC apply to the uncalibrated saved dashboard model's 2023–2025 evaluation. The separate calibrated notebook experiment reports 82.0% accuracy and 0.908 ROC-AUC on 2024–2025.
-- The model was trained on data through 2022 and calibrated using 2023 data. Performance on later seasons or future rule changes may differ.
+- The saved dashboard model was trained on data through 2022 and is uncalibrated. A separate notebook experiment uses 2023 for calibration. Performance on later seasons or future rule changes may differ.
 - The project does not estimate player prices. Player Shortlist ranks existing players using historical batting and bowling impact, with analyst-controlled role priorities. Rankings are statistical decision support, not official franchise recommendations.
 - The application currently works with historical data and does not ingest live scores.
 - Pre-match prediction performance is limited with the features used in the current experiment.
