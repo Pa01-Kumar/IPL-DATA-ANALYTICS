@@ -41,7 +41,7 @@ def prepare_auction_csv(
     source_url: str,
     price_unit: str,
     accessed_on: str,
-    auction_year_override: int | None = None,
+    auction_year_override=None,
 ) -> tuple[int, Path]:
     if price_unit not in PRICE_TO_LAKH:
         raise ValueError(f"Unsupported price unit: {price_unit}")
