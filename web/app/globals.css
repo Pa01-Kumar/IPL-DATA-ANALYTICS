@@ -635,3 +635,30 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
  .scorecard-fow-list>span{min-width:100%}
  .match-detail-scorecard>div:first-child{align-items:flex-start;flex-direction:column;gap:5px}
 }
+
+
+/* Partnership and ball-by-ball detail panels */
+.scorecard-extra-section{margin-top:18px;padding-top:15px;border-top:1px solid #e8edf1}
+.scorecard-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.scorecard-section-heading h4{margin:0;color:#536b7a;font:700 10px 'Roboto Mono',monospace;letter-spacing:.8px;text-transform:uppercase}
+.scorecard-section-heading span{color:#89979f;font:9px 'Roboto Mono',monospace}
+.scorecard-partnership-table{min-width:680px}
+.scorecard-partnership-table td:nth-child(2){min-width:220px;white-space:normal}
+.scorecard-partnership-table td strong{color:#244b67}
+.scorecard-partners{font-size:10px!important}
+.scorecard-delivery-wrap{max-height:360px;overflow:auto;border:1px solid #e8edf1;border-radius:6px;overscroll-behavior:contain}
+.scorecard-delivery-table{min-width:760px}
+.scorecard-delivery-table thead th{position:sticky;top:0;z-index:1}
+.scorecard-delivery-table td{padding:8px 10px;font-size:10px}
+.scorecard-delivery-table td:nth-child(2){min-width:150px;white-space:normal}
+.scorecard-delivery-table td:nth-child(2) small{display:block;margin-top:3px;color:#96a1a8;font-size:9px}
+.scorecard-delivery-table td:nth-child(7){min-width:150px;text-align:left;white-space:normal}
+.scorecard-wicket-row{background:#fff8f6}
+.scorecard-wicket-row td:first-child b{color:#b3453e}
+.scorecard-wicket-tag{display:inline-block;padding:4px 6px;border:1px solid #f1d6d2;border-radius:4px;background:#fff0ed;color:#b0443b;font:700 8px 'Roboto Mono',monospace;line-height:1.5}
+.scorecard-boundary-tag{color:#2877a4;font:700 8px 'Roboto Mono',monospace;letter-spacing:.4px}
+@media(max-width:700px){
+ .scorecard-extra-section{margin-top:15px;padding-top:13px}
+ .scorecard-delivery-wrap{max-height:320px}
+ .scorecard-section-heading{align-items:flex-start}
+}
