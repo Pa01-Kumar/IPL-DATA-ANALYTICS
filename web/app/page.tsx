@@ -7,15 +7,17 @@ import {
   SlidersHorizontal, Swords, Trophy, Users, X
 } from "lucide-react";
 import LiveCentre from "./live/LiveCentre";
+import HomeFeed from "./HomeFeed";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer,
   Tooltip, XAxis, YAxis
 } from "recharts";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-type PageKey = "Live Centre" | "Overview" | "Players" | "Teams" | "Venues" | "Matchups" | "Impact" | "Win Probability" | "Franchise Fit";
+type PageKey = "Home" | "Live Centre" | "Overview" | "Players" | "Teams" | "Venues" | "Matchups" | "Impact" | "Win Probability" | "Franchise Fit";
 type AnyRow = Record<string, any>;
 const nav: { label: PageKey; icon: any; group: string }[] = [
+  { label: "Home", icon: LayoutDashboard, group: "MATCH CENTRE" },
   { label: "Live Centre", icon: Activity, group: "MATCH CENTRE" },
   { label: "Overview", icon: LayoutDashboard, group: "WORKSPACE" },
   { label: "Players", icon: Users, group: "WORKSPACE" },
@@ -43,7 +45,7 @@ function SectionTitle({ eyebrow, title, detail }: { eyebrow: string; title: stri
 }
 
 export default function Home() {
-  const [page, setPage] = useState<PageKey>("Overview");
+  const [page, setPage] = useState<PageKey>("Home");
   const [overview, setOverview] = useState<AnyRow | null>(null);
   const [players, setPlayers] = useState<AnyRow[]>([]);
   const [teams, setTeams] = useState<AnyRow[]>([]);
@@ -103,7 +105,7 @@ export default function Home() {
       <header className="topbar"><button className="mobile-menu" onClick={() => setMobileNav(true)}><Menu/></button><div className="breadcrumb">IPL INTELLIGENCE <span>/</span> {page.toUpperCase()}</div><div className="top-actions"><span className="status"><i/> HISTORICAL DATA</span><div className="avatar">PK</div></div></header>
       <div className="content">
         {error && <div className="error-banner">{error}</div>}
-        {page === "Live Centre" ? <LiveCentre/> : loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
+        {page === "Home" ? <HomeFeed onNavigate={setPage}/> : page === "Live Centre" ? <LiveCentre/> : loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
           {page === "Overview" && <Overview data={overview}/>}
           {page === "Players" && <Players rows={filteredPlayers} search={search} setSearch={setSearch} role={role} setRole={setRole} onSelect={openPlayer}/>}
           {page === "Teams" && <Teams rows={teams} teamA={teamA} teamB={teamB} setTeamA={setTeamA} setTeamB={setTeamB} compare={compare} result={comparison}/>}
