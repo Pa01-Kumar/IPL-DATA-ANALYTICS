@@ -582,3 +582,56 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
 .scorecard-over-list span { padding:5px 8px; border:1px solid #e7ebf0; border-radius:5px; color:#526174; font-size:11px; font-variant-numeric:tabular-nums; }
 .scorecard-over-list b { color:#1d3555; margin-right:4px; }
 @media(max-width:700px){.scorecard-columns,.scorecard-bottom-grid{grid-template-columns:1fr;gap:16px}}
+
+
+/* Scorecard polish: clear innings hierarchy, full-width tables and compact detail panels */
+.match-detail-modal{width:min(1040px,calc(100vw - 36px));max-height:88vh;overscroll-behavior:contain}
+.match-detail-scorecard{margin:20px 25px 0;padding:0;border:0;border-radius:0}
+.match-detail-scorecard>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 12px;border-bottom:1px solid #e6ebef}
+.match-detail-scorecard>div:first-child h3{font-size:14px;letter-spacing:-.1px;color:#263d4b}
+.match-detail-scorecard>div:first-child>span{font:10px 'Roboto Mono',monospace;color:#89969f}
+.match-detail-scorecard>.scorecard-innings{display:block;padding:18px 0 20px;border-top:1px solid #e6ebef}
+.scorecard-innings-heading{display:flex;align-items:center;gap:12px;margin:0 0 15px;padding:0 0 13px;border-bottom:1px solid #edf1f3}
+.scorecard-innings-heading strong{font:700 16px Roboto,Arial,sans-serif;color:#253b49}
+.scorecard-innings-heading b{margin-left:auto;font:700 21px Roboto,Arial,sans-serif;color:#173d5c;font-variant-numeric:tabular-nums}
+.scorecard-innings-heading span{padding:5px 8px;border:1px solid #e4ebef;border-radius:4px;background:#f7fafb;color:#687d89;font:10px 'Roboto Mono',monospace;white-space:nowrap}
+.scorecard-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.scorecard-panel{min-width:0;padding:0}
+.scorecard-columns .scorecard-panel+ .scorecard-panel{padding-top:15px;border-top:1px solid #edf1f3}
+.scorecard-columns h4,.scorecard-bottom-grid h4{margin:0 0 9px;color:#536b7a;font:700 10px 'Roboto Mono',monospace;letter-spacing:.8px;text-transform:uppercase}
+.scorecard-table-scroll{width:100%;overflow-x:auto;border:1px solid #e9eef1;border-radius:6px}
+.scorecard-table{width:100%;min-width:540px;border-collapse:collapse;text-align:right;white-space:nowrap;font:11px Roboto,Arial,sans-serif}
+.scorecard-table th{padding:10px 12px;background:#f6f8fa;border-bottom:1px solid #e5ebef;color:#788893;font:600 9px 'Roboto Mono',monospace;letter-spacing:.45px}
+.scorecard-table td{padding:10px 12px;border-bottom:1px solid #edf1f3;color:#405563;font-variant-numeric:tabular-nums}
+.scorecard-table tbody tr:last-child td{border-bottom:0}
+.scorecard-table tbody tr:hover{background:#fafcfd}
+.scorecard-table td:first-child{width:44%;white-space:normal}
+.scorecard-table td:first-child b{font:600 11px/1.35 Roboto,Arial,sans-serif;color:#263d4b}
+.scorecard-table td:first-child small{max-width:420px;margin-top:3px;color:#89979f;font:10px/1.35 Roboto,Arial,sans-serif}
+.scorecard-extras{margin:8px 2px 0!important;color:#71818b!important;font:10px Roboto,Arial,sans-serif!important}
+.scorecard-extras span{padding:0 4px;color:#b0bac1}
+.scorecard-bottom-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;margin-top:17px;padding-top:15px;border-top:1px solid #e9eef1}
+.scorecard-fow-list{display:flex;flex-wrap:wrap;gap:7px}
+.scorecard-fow-list>span{display:flex;flex-direction:column;gap:3px;min-width:100px;padding:8px 9px;border:1px solid #e7edf1;border-radius:5px;background:#fbfcfd}
+.scorecard-fow-list>span b{color:#29475b;font:700 11px 'Roboto Mono',monospace}
+.scorecard-fow-list>span small{color:#788994;font:10px Roboto,Arial,sans-serif}
+.scorecard-fow-list>p{margin:0;color:#7a8991;font:11px Roboto,Arial,sans-serif}
+.scorecard-over-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:6px}
+.scorecard-over-list>span{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:7px 9px;border:1px solid #e7edf1;border-radius:5px;background:#fff;color:#617481;font:10px 'Roboto Mono',monospace}
+.scorecard-over-list>span b{margin:0;color:#83919a;font-weight:500}
+.scorecard-over-list>span strong{color:#27475e;font-weight:700}
+@media(max-width:700px){
+ .match-detail-modal{width:calc(100vw - 18px);max-height:91vh}
+ .match-detail-scorecard{margin:16px 17px 0}
+ .scorecard-innings-heading{gap:8px;flex-wrap:wrap}
+ .scorecard-innings-heading strong{width:100%;font-size:14px}
+ .scorecard-innings-heading b{margin-left:0;font-size:19px}
+ .scorecard-bottom-grid{grid-template-columns:minmax(0,1fr);gap:15px}
+ .scorecard-columns{gap:15px}
+ .scorecard-table{min-width:500px}
+ .scorecard-fow-list>span{min-width:calc(50% - 4px)}
+}
+@media(max-width:420px){
+ .scorecard-fow-list>span{min-width:100%}
+ .match-detail-scorecard>div:first-child{align-items:flex-start;flex-direction:column;gap:5px}
+}
