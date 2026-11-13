@@ -266,3 +266,41 @@ East Point College of Engineering and Technology
 ---
 
 *Developed as a learning and portfolio project exploring cricket analytics, data science, and machine learning.*
+
+
+## Next.js + FastAPI application
+
+The repository also contains an actively developed Next.js 14 interface backed by the FastAPI service in `api/`. The Streamlit dashboard remains available for historical analysis while the newer interface is developed.
+
+### Run the web application
+
+Start the API from the repository root:
+
+```bash
+python -m pip install -r api/requirements.txt
+python -m uvicorn api.main:app --reload --port 8000
+```
+
+In a second terminal:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+### Enable the Live Match Centre
+
+The Live Match Centre uses the Cricket Database live API through a server-side FastAPI proxy. The API key must remain on the backend and must never be added to frontend environment variables or committed to Git.
+
+1. Create an API key with the provider at [Cricket Database](https://cricketdatabase.com/documentation/live).
+2. Copy `api/.env.example` to `api/.env`.
+3. Set `CRICKET_DATABASE_API_KEY=your_private_key` in `api/.env`.
+4. Install the updated API requirements and restart FastAPI.
+
+The provider documents the `/v1/live` and `/v1/live/{match}` endpoints. Its live endpoints require a plan that includes live access; a free key does not include the live-match feed. Provider update cadence and match coverage depend on the plan and source. The app refreshes its live-match list every 20 seconds while the Live tab is open.
+
+**Important:** Do not commit `api/.env`. Only `api/.env.example` belongs in version control. Live scores and commentary are displayed only when returned by the configured provider. Historical Win Probability remains a separate replay of past matches and must not be interpreted as a live prediction.
+
