@@ -557,3 +557,28 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
 @keyframes matchModalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:560px){.match-detail-backdrop{padding:10px;align-items:end}.match-detail-modal{max-height:90vh;border-radius:10px 10px 7px 7px}.match-detail-top{padding:19px 17px 15px}.match-detail-result{margin:14px 17px 0;padding:14px}.match-detail-facts{margin:7px 17px 0;grid-template-columns:1fr}.match-detail-facts>div{padding:12px 0}.match-detail-scorecard{margin:15px 17px 0}.match-detail-footer{padding:12px 17px;align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.match-detail-backdrop,.match-detail-modal{animation:none}}
+
+
+/* Compact historical scorecard */
+.match-detail-modal { width:min(980px,calc(100vw - 32px)); max-height:min(88vh,900px); overflow-y:auto; }
+.scorecard-innings { border-top:1px solid #e7ebf0; padding:16px 0; }
+.scorecard-innings-heading { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+.scorecard-innings-heading strong { font-size:15px; color:#172b4d; }
+.scorecard-innings-heading b { font-size:19px; color:#102b50; font-variant-numeric:tabular-nums; }
+.scorecard-innings-heading span { color:#718096; font-size:12px; }
+.scorecard-columns { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.scorecard-columns h4,.scorecard-bottom-grid h4 { margin:0 0 8px; color:#526174; font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+.scorecard-table-scroll { overflow-x:auto; }
+.scorecard-table { width:100%; border-collapse:collapse; font-size:12px; text-align:right; white-space:nowrap; }
+.scorecard-table th { padding:8px 6px; color:#778397; font-size:10px; border-bottom:1px solid #e7ebf0; }
+.scorecard-table td { padding:9px 6px; color:#34445a; border-bottom:1px solid #f0f2f5; font-variant-numeric:tabular-nums; }
+.scorecard-table th:first-child,.scorecard-table td:first-child { text-align:left; }
+.scorecard-table td:first-child b { display:block; color:#1e3048; }
+.scorecard-table td:first-child small { display:block; max-width:180px; overflow:hidden; text-overflow:ellipsis; color:#8994a4; font-size:10px; }
+.scorecard-extras { margin:8px 0 0; color:#66758a; font-size:11px; }
+.scorecard-bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:16px; padding-top:14px; border-top:1px solid #edf0f4; }
+.scorecard-bottom-grid p { margin:0; color:#64748b; font-size:11px; line-height:1.7; }
+.scorecard-over-list { display:flex; flex-wrap:wrap; gap:6px; }
+.scorecard-over-list span { padding:5px 8px; border:1px solid #e7ebf0; border-radius:5px; color:#526174; font-size:11px; font-variant-numeric:tabular-nums; }
+.scorecard-over-list b { color:#1d3555; margin-right:4px; }
+@media(max-width:700px){.scorecard-columns,.scorecard-bottom-grid{grid-template-columns:1fr;gap:16px}}
