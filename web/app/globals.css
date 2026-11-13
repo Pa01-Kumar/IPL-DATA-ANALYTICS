@@ -452,3 +452,28 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
 .data-footnote{font:10px/1.6 Roboto,Arial,sans-serif;color:#7b8992}
 .match-centre-footer{border-top:1px solid #e4e9ed;margin-top:14px;font:9px 'Roboto Mono',monospace;color:#89949c}
 @media(max-width:760px){.match-centre-heading{flex-direction:row;align-items:flex-start}.archive-note{display:none}.results-toolbar{align-items:flex-start;flex-direction:column}.results-controls{width:100%}.results-search{flex:1}.results-search input{width:100%;min-width:100px}.provider-match-row{grid-template-columns:1fr}.provider-match-status{text-align:left;width:max-content}.live-tabs{gap:18px}}
+
+
+/* Match archive density and navigation fit */
+@media(min-width:761px){
+  .sidebar{gap:8px;padding-left:18px;padding-right:18px}
+  .sidebar .brand{width:195px;min-width:195px}
+  .nav-item{padding:8px 6px;font-size:10.5px;gap:5px}
+  .nav-item svg{width:13px;height:13px}
+}
+.results-table th{padding:10px 12px;font-size:8.5px}
+.results-table td{padding:9px 12px;font-size:10.5px;line-height:1.35}
+.results-table td:nth-child(2){min-width:180px}
+.results-table td:nth-child(2) b{font-size:10.5px}
+.results-table td small{display:block;margin-top:3px;font-size:9px;color:#8b969e}
+.results-table tbody tr{transition:background .15s ease}
+.results-table tbody tr:hover{background:#f4f8fb}
+.results-table .winner-label{font-size:9px;padding:4px 6px}
+.results-toolbar{gap:14px}
+.results-controls{gap:8px}
+.results-search input{font-size:10.5px}
+.results-season select{font-size:10.5px}
+@media(max-width:760px){
+  .results-table-wrap{overflow-x:auto}
+  .results-table{min-width:850px}
+}
