@@ -221,6 +221,31 @@ def win_probability(match_id: str):
         "curve": records(chase[columns]),
     }
 
+@app.get("/api/results")
+def historical_results(limit: int = Query(100, ge=1, le=500), season: str | None = None):
+    """Return completed IPL match records from the local historical dataset."""
+    frame = csv("matches.csv").copy()
+    if season and season != "All":
+        frame = frame[frame["season"].astype(str) == str(season)]
+    frame = frame.sort_values("date", ascending=False).head(limit).copy()
+    frame["result"] = np.select(
+        [
+            frame["winner_runs"].notna(),
+            frame["winner_wickets"].notna(),
+        ],
+        [
+            frame["winner_runs"].fillna(0).astype("Int64").astype(str) + " runs",
+            frame["winner_wickets"].fillna(0).astype("Int64").astype(str) + " wickets",
+        ],
+        default="No result",
+    )
+    columns = [
+        "match_id", "season", "date", "team1", "team2", "winner",
+        "result", "player_of_match", "venue",
+    ]
+    return records(frame[columns])
+
+
 @app.get("/api/matches")
 def matches(limit: int = Query(100, ge=1, le=500)):
     frame = csv("matches.csv").sort_values("date", ascending=False).head(limit)
