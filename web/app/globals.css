@@ -203,3 +203,63 @@ th{color:#6c7883}td{color:#283640}
 .home-error{padding:12px;background:#fff2f0;border:1px solid #f0cbc6;border-radius:8px;color:#9a3d35;font-size:11px;margin-bottom:12px}
 @media(max-width:800px){.home-quick-links{grid-template-columns:repeat(2,minmax(0,1fr))}.home-lower-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.home-welcome{padding:23px 20px}.home-season-mark{display:none}.home-welcome h1{font-size:38px}.home-quick-links{gap:8px}.home-quick-links button{padding:12px 10px;gap:8px}.home-stat-strip div{padding:11px 9px}.home-stat-strip b{font-size:18px}.home-stat-strip span{font-size:7px}.home-match-grid{grid-template-columns:1fr}.home-section-head{align-items:flex-start}.home-section-head>button{margin-top:8px}.home-match-foot{font-size:8px}}
+
+
+/* Compact cricket-feed home layout */
+.home-feed{max-width:1320px;padding-bottom:30px;color:#25333d}
+.crex-home-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 17px}
+.crex-home-head h1{font:600 25px/1.2 'Space Grotesk',sans-serif;color:#202d36;letter-spacing:-.6px;margin:5px 0}
+.crex-home-head p{font-size:11px;color:#7b8790;margin:0}
+.crex-all-matches{display:flex;align-items:center;gap:5px;background:#18794e;color:#fff;border:0;border-radius:6px;padding:9px 12px;font-size:10px;font-weight:650;cursor:pointer}
+.crex-home-tabs{display:flex;align-items:center;gap:25px;height:43px;padding:0 15px;background:#fff;border:1px solid #e1e6ea;border-radius:8px 8px 0 0}
+.crex-home-tabs button{height:100%;padding:0 3px;border:0;border-bottom:2px solid transparent;background:transparent;color:#63717c;font-size:11px;cursor:pointer}
+.crex-home-tabs button.selected{color:#18794e;border-bottom-color:#18794e;font-weight:700}
+.crex-data-strip{display:grid;grid-template-columns:1.4fr repeat(4,1fr);align-items:center;background:#fff;border:1px solid #e1e6ea;border-top:0;border-radius:0 0 8px 8px;margin-bottom:18px}
+.crex-data-strip>div{padding:10px 14px;border-right:1px solid #edf0f2;display:flex;align-items:center;gap:7px;min-width:0}
+.crex-data-strip>div:last-child{border:0}
+.crex-data-strip strong{font:600 15px 'Space Grotesk';color:#25343e}
+.crex-data-strip small{font-size:9px;color:#849099}
+.crex-data-strip>div:not(:first-child){display:grid;gap:2px}
+.crex-data-strip>div:first-child{flex-wrap:wrap}
+.crex-data-strip>div:first-child b{font:600 9px 'DM Mono';letter-spacing:.7px;color:#176b46}
+.crex-data-dot{width:7px;height:7px;border-radius:50%;background:#1b9a60;display:inline-block;flex:none}
+.crex-home-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,.85fr);gap:15px;align-items:start}
+.crex-main-column,.crex-side-column{min-width:0}
+.crex-section-bar{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 0 10px}
+.crex-section-bar h2{font:600 17px 'Space Grotesk';color:#26343e;margin:4px 0 0}
+.crex-section-bar>button{display:flex;align-items:center;gap:3px;border:0;background:transparent;color:#18794e;font-size:10px;font-weight:650;cursor:pointer}
+.crex-match-list{display:grid;gap:9px}
+.crex-match-row{background:#fff;border:1px solid #e0e6e9;border-radius:8px;padding:12px 14px}
+.crex-match-topline{display:flex;justify-content:space-between;align-items:center;color:#87929a;font:9px 'DM Mono';padding-bottom:8px;border-bottom:1px solid #eef1f2}
+.crex-match-topline i{font-style:normal;padding:0 4px;color:#b2bbc1}
+.crex-result-tag{font:8px 'DM Mono';letter-spacing:.7px;color:#176b46;background:#eaf4ee;border-radius:3px;padding:4px 6px}
+.crex-match-teams{display:grid;gap:8px;padding:10px 0}
+.crex-match-teams>div{display:flex;align-items:center;gap:9px;min-width:0}
+.crex-team-badge{width:29px;height:29px;display:grid;place-items:center;flex:none;border-radius:50%;background:#edf2f5;color:#405361;font:600 9px 'DM Mono'}
+.crex-match-teams b{font-size:11px;font-weight:650;color:#2b3943;flex:1}
+.crex-match-teams svg{color:#c18b2c;flex:none}
+.crex-match-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #eef1f2;padding-top:8px}
+.crex-match-bottom strong{font-size:10px;color:#176b46;font-weight:650}
+.crex-match-bottom span{font-size:9px;color:#8a959d;text-align:right}
+.crex-potm{margin-top:8px;padding-top:7px;border-top:1px dashed #e9edef;font:8px 'DM Mono';letter-spacing:.5px;color:#8a959d}
+.crex-potm b{font:600 9px 'DM Sans';letter-spacing:0;color:#53616b;margin-left:5px}
+.crex-side-column{display:grid;gap:13px}
+.crex-side-panel{background:#fff;border:1px solid #e0e6e9;border-radius:8px;padding:14px}
+.crex-side-panel .crex-section-bar{margin-bottom:9px}
+.crex-side-panel .crex-section-bar h2{font-size:15px}
+.crex-shortcut{width:100%;display:flex;align-items:center;gap:10px;padding:11px 2px;border:0;border-top:1px solid #eef1f2;background:transparent;text-align:left;cursor:pointer}
+.crex-shortcut>svg:first-child{width:17px;height:17px;color:#18794e;flex:none}
+.crex-shortcut>svg:last-child{width:14px;height:14px;color:#98a2a9;margin-left:auto;flex:none}
+.crex-shortcut span{display:grid;gap:3px}
+.crex-shortcut b{font-size:10px;color:#34424c}
+.crex-shortcut small{font-size:9px;color:#87929a}
+.crex-rank-row{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #eef1f2}
+.crex-rank-row span{font:9px 'DM Mono';color:#9aa4ab}
+.crex-rank-row b{font-size:10px;color:#34424c;font-weight:600}
+.crex-rank-row strong{font:600 11px 'DM Mono';color:#176b46}
+.crex-live-note{padding:14px;background:#f5f8f6;border:1px solid #e1ebe4;border-radius:8px}
+.crex-live-note>b{font-size:10px;color:#344b3c;margin-left:7px}
+.crex-live-note p{font-size:10px;line-height:1.6;color:#738078;margin:9px 0}
+.crex-live-note small{display:flex;align-items:center;gap:5px;color:#849087;font-size:9px}
+@media(max-width:900px){.crex-home-layout{grid-template-columns:1fr}.crex-side-column{grid-template-columns:repeat(2,minmax(0,1fr))}.crex-live-note{grid-column:1/-1}}
+@media(max-width:600px){.crex-home-head{align-items:flex-start}.crex-data-strip{grid-template-columns:repeat(2,1fr)}.crex-data-strip>div{border-bottom:1px solid #edf0f2}.crex-data-strip>div:nth-child(2n){border-right:0}.crex-side-column{grid-template-columns:1fr}.crex-live-note{grid-column:auto}.crex-match-bottom{align-items:flex-start;flex-direction:column;gap:4px}.crex-match-bottom span{text-align:left}.crex-home-tabs{gap:18px;overflow:auto}}
