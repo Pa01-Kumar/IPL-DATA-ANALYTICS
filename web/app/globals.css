@@ -503,3 +503,20 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
 .live-centre .match-centre-footer span:first-child svg{color:#7895a7}
 @media(max-width:900px){.live-centre .results-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.live-centre .results-summary{gap:7px}.live-centre .results-summary-card{padding:11px}.live-centre .results-summary-card strong{font-size:20px}.live-centre .results-summary-card small{font-size:8px}.live-centre .results-controls{align-items:stretch}.live-centre .results-search{flex:1}.live-centre .results-search input{width:100%;min-width:0}.live-centre .results-count{align-self:center}}
+
+
+/* Results archive pagination and finishing details */
+.live-centre .results-pagination{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:12px;padding:12px 2px;border-top:1px solid #e7ecef;color:#7b8992;font:10px Roboto,Arial,sans-serif}
+.live-centre .results-pagination>span{line-height:1.5}
+.live-centre .results-pagination b{color:#354957;font-weight:700}
+.live-centre .results-pagination>div{display:flex;align-items:center;gap:12px}
+.live-centre .results-pagination button{padding:7px 11px;border:1px solid #dce4ea;border-radius:5px;background:#fff;color:#3d596b;font:600 10px Roboto,Arial,sans-serif;transition:background .15s,border-color .15s}
+.live-centre .results-pagination button:hover:not(:disabled){background:#f1f7fb;border-color:#b9d0e0}
+.live-centre .results-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.live-centre .results-pagination>div>span{color:#788791;font:10px 'Roboto Mono',monospace;white-space:nowrap}
+.live-centre .results-table tbody tr td:first-child{white-space:nowrap}
+.live-centre .results-table tbody tr td:nth-child(3){min-width:115px}
+.live-centre .results-table tbody tr td:nth-child(4){min-width:130px}
+.live-centre .results-table tbody tr td:nth-child(5){min-width:135px}
+.live-centre .results-table tbody tr td:nth-child(6){min-width:150px}
+@media(max-width:560px){.live-centre .results-pagination{align-items:flex-start;flex-direction:column}.live-centre .results-pagination>div{width:100%;justify-content:space-between}}
