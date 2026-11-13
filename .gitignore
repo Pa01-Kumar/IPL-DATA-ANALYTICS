@@ -9,3 +9,12 @@ Thumbs.db
 .env.*
 .streamlit/secrets.toml
 data/raw/
+
+# Next.js generated files
+node_modules/
+.next/
+out/
+next-env.d.ts
+
+# Keep example environment templates trackable
+!.env.example
