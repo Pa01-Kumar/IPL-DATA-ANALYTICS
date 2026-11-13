@@ -63,7 +63,7 @@ export default function LiveCentre() {
   useEffect(() => { load(); }, [tab]);
   useEffect(() => {
     if (!configured || tab !== "live") return;
-    const timer = window.setInterval(() => load(true), 20000);
+    const timer = window.setInterval(() => load(true), 60000);
     return () => window.clearInterval(timer);
   }, [configured, tab, load]);
 
@@ -78,7 +78,7 @@ export default function LiveCentre() {
         // Keep the last successful scorecard visible if a refresh briefly fails.
       }
     };
-    const timer = window.setInterval(refreshSelected, 20000);
+    const timer = window.setInterval(refreshSelected, 60000);
     return () => window.clearInterval(timer);
   }, [configured, tab, selected?.match]);
 
@@ -133,7 +133,7 @@ export default function LiveCentre() {
           <div className="match-teams">{(match.teams || []).slice(0, 2).map((team, i) => <div key={team.name} className="match-team"><b>{team.name}</b><strong>{team.score || "—"}</strong></div>)}</div>
           <div className="match-tile-bottom"><span>{match.format || "Match"} · {match.venue || match.city || "Venue TBC"}</span><span>{match.status || timeLabel(match.starts_at)}</span></div>
         </button>)}
-        <div className="provider-foot"><span><i/> PROVIDER CONNECTED</span><span>Updated {lastUpdated ? timeLabel(lastUpdated) : "—"}</span></div>
+        <div className="provider-foot"><span><i/> API KEY CONFIGURED</span><span>Updated {lastUpdated ? timeLabel(lastUpdated) : "—"}</span></div>
       </div>
       <div className="match-detail-column">
         {!selected ? <div className="detail-empty"><Activity size={28}/><h3>Select a match</h3><p>Choose a fixture to open its detailed match view.</p></div> : <div className="panel live-detail">
@@ -151,7 +151,7 @@ export default function LiveCentre() {
             {detail.scorecard?.map((innings: any, index: number) => <div className="innings-block" key={index}><b>{innings.team || "Innings"} · {innings.runs}/{innings.wickets}</b><span>{innings.overs} overs · RR {innings.run_rate ?? "—"}</span></div>)}
             {detail.updated_at && <small>Provider update: {timeLabel(detail.updated_at)}</small>}
           </div> : <div className="detail-loading">{selected ? "Loading scorecard…" : ""}</div>}
-          <div className="detail-disclaimer"><Clock3 size={13}/> Provider timestamps are shown as received. Live feed refreshes approximately every 20 seconds.</div>
+          <div className="detail-disclaimer"><Clock3 size={13}/> Provider timestamps are shown as received. Provider data refreshes approximately every 60 seconds.</div>
         </div>}
       </div>
     </div>}
