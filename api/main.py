@@ -223,3 +223,55 @@ def win_probability(match_id: str):
 def matches(limit: int = Query(100, ge=1, le=500)):
     frame = csv("matches.csv").sort_values("date", ascending=False).head(limit)
     return records(frame)
+
+
+# Live cricket provider proxy. API keys stay on the server and are never sent to the browser.
+import os
+import httpx
+
+LIVE_PROVIDER_BASE = "https://api.cricketdatabase.com/v1"
+
+@app.get("/api/live/status")
+def live_status():
+    configured = bool(os.getenv("CRICKET_DATABASE_API_KEY"))
+    return {
+        "configured": configured,
+        "provider": "Cricket Database",
+        "message": "Live feed connected" if configured else "Add CRICKET_DATABASE_API_KEY to api/.env to enable verified live scores.",
+        "refresh_seconds": 20,
+    }
+
+async def live_provider_get(path: str, params: dict | None = None):
+    key = os.getenv("CRICKET_DATABASE_API_KEY")
+    if not key:
+        raise HTTPException(status_code=503, detail="Live cricket provider is not configured. Add CRICKET_DATABASE_API_KEY to the API environment.")
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            response = await client.get(
+                f"{LIVE_PROVIDER_BASE}{path}",
+                headers={"Authorization": f"Bearer {key}"},
+                params=params or {},
+            )
+        if response.status_code == 403:
+            raise HTTPException(status_code=402, detail="The connected cricket data plan does not include this live endpoint.")
+        if response.status_code == 429:
+            raise HTTPException(status_code=429, detail="Live cricket provider rate limit reached. Please retry shortly.")
+        if response.status_code == 401:
+            raise HTTPException(status_code=502, detail="The configured cricket data key was rejected.")
+        response.raise_for_status()
+        return response.json()
+    except HTTPException:
+        raise
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Live cricket provider request failed: {exc}")
+
+@app.get("/api/live/matches")
+async def live_matches(state: str = Query("live", pattern="^(live|upcoming|finished|all)$"), format: str | None = None):
+    params = {"state": state}
+    if format:
+        params["format"] = format
+    return await live_provider_get("/live", params)
+
+@app.get("/api/live/matches/{match_slug}")
+async def live_match(match_slug: str):
+    return await live_provider_get(f"/live/{match_slug}")
