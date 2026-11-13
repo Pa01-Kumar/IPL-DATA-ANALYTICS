@@ -1,160 +1,166 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Activity, AlertCircle, Clock3, MapPin, RefreshCw, Radio, ShieldCheck, Trophy } from "lucide-react";
+import { AlertCircle, CalendarDays, Clock3, RefreshCw, Trophy } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-type Match = {
-  match: string; name: string; competition?: string; format?: string; state?: string;
-  status?: string; starts_at?: string; venue?: string; city?: string;
-  teams?: { name: string; score?: string }[]; innings?: any[];
-  updated_at?: string; winner?: string | null; ball_by_ball?: boolean;
-};
-type Payload = { data?: { results?: Match[]; count?: number }; meta?: { plan?: string; window?: { updated_every?: string; last_update?: string } } };
 
-function timeLabel(value?: string) {
-  if (!value) return "Time unavailable";
+type Result = {
+  match_id: string | number;
+  season: string | number;
+  date: string;
+  venue?: string;
+  team1: string;
+  team2: string;
+  winner?: string | null;
+  result?: string;
+  player_of_match?: string | null;
+};
+type LiveMatch = {
+  match: string;
+  name?: string;
+  competition?: string;
+  format?: string;
+  state?: string;
+  status?: string;
+  starts_at?: string;
+  venue?: string;
+  teams?: { name: string; score?: string }[];
+};
+
+function dateLabel(value?: string) {
+  if (!value) return "Date unavailable";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export default function LiveCentre() {
   const [tab, setTab] = useState<"live" | "upcoming" | "finished">("live");
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [selected, setSelected] = useState<Match | null>(null);
-  const [detail, setDetail] = useState<any>(null);
+  const [liveMatches, setLiveMatches] = useState<LiveMatch[]>([]);
+  const [results, setResults] = useState<Result[]>([]);
   const [configured, setConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [season, setSeason] = useState("All");
   const [lastUpdated, setLastUpdated] = useState("");
 
   const load = useCallback(async (quiet = false) => {
-    if (quiet) setRefreshing(true); else setLoading(true);
+    if (quiet) setRefreshing(true);
+    else setLoading(true);
     setError("");
     try {
-      const status = await fetch(API + "/api/live/status", { cache: "no-store" }).then(r => r.json());
-      setConfigured(Boolean(status.configured));
-      if (!status.configured) {
-        setMatches([]);
-        setSelected(null);
-        setDetail(null);
-        setError(status.message || "Live feed is not configured.");
-        return;
+      if (tab === "finished") {
+        const response = await fetch(API + "/api/results?limit=100", { cache: "no-store" });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || "Could not load historical results.");
+        setResults(body);
+      } else {
+        const statusResponse = await fetch(API + "/api/live/status", { cache: "no-store" });
+        const status = await statusResponse.json();
+        setConfigured(Boolean(status.configured));
+        if (!status.configured) {
+          setLiveMatches([]);
+          setError("Live fixtures are not connected. The historical results archive is available in the Results tab.");
+          return;
+        }
+        const response = await fetch(API + "/api/live/matches?state=" + tab, { cache: "no-store" });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || "This fixture feed is not available on the current provider plan.");
+        setLiveMatches(body?.data?.results || []);
       }
-      const response = await fetch(API + "/api/live/matches?state=" + tab, { cache: "no-store" });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.detail || "Could not load live matches.");
-      const list: Match[] = body?.data?.results || [];
-      setMatches(list);
       setLastUpdated(new Date().toISOString());
-      if (selected) {
-        const stillThere = list.find(m => m.match === selected.match);
-        if (stillThere) setSelected(stillThere);
-      }
     } catch (e: any) {
-      setError(e?.message || "Unable to reach the live cricket service.");
+      setError(e?.message || "Unable to load match information.");
+      if (tab === "finished") setResults([]);
+      else setLiveMatches([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [tab, selected?.match]);
+  }, [tab]);
 
-  useEffect(() => { load(); }, [tab]);
-  useEffect(() => {
-    if (!configured || tab !== "live") return;
-    const timer = window.setInterval(() => load(true), 60000);
-    return () => window.clearInterval(timer);
-  }, [configured, tab, load]);
-
-  useEffect(() => {
-    if (!configured || tab !== "live" || !selected?.match) return;
-    const refreshSelected = async () => {
-      try {
-        const response = await fetch(API + "/api/live/matches/" + encodeURIComponent(selected.match), { cache: "no-store" });
-        const body = await response.json();
-        if (response.ok) setDetail(body?.data || body);
-      } catch {
-        // Keep the last successful scorecard visible if a refresh briefly fails.
-      }
-    };
-    const timer = window.setInterval(refreshSelected, 60000);
-    return () => window.clearInterval(timer);
-  }, [configured, tab, selected?.match]);
-
-  async function openMatch(match: Match) {
-    setSelected(match);
-    setDetail(null);
-    try {
-      const response = await fetch(API + "/api/live/matches/" + encodeURIComponent(match.match), { cache: "no-store" });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.detail || "Match details are unavailable.");
-      setDetail(body?.data || body);
-    } catch (e: any) {
-      setError(e?.message || "Could not load match details.");
-    }
-  }
-
-  const countLabel = tab === "live" ? "IN PLAY" : tab === "upcoming" ? "UPCOMING" : "COMPLETED";
+  useEffect(() => { load(); }, [load]);
+  const seasons = Array.from(new Set(results.map(row => String(row.season)))).sort((a, b) => Number(b) - Number(a));
+  const visibleResults = results.filter(row => season === "All" || String(row.season) === season);
 
   return <section className="live-centre">
-    <div className="live-hero">
+    <div className="match-centre-heading">
       <div>
-        <div className="eyebrow"><Radio size={14}/> CRICKET, AS IT HAPPENS</div>
-        <h1>Live <em>Match Centre</em></h1>
-        <p>Live scorecards, match state and ball-by-ball intelligence in one focused view.</p>
-        <div className="live-trust"><ShieldCheck size={14}/> Scores are served from the configured data provider, not generated by this app.</div>
+        <div className="match-breadcrumb">IPL MATCH CENTRE <span>/</span> {tab === "finished" ? "RESULTS" : tab.toUpperCase()}</div>
+        <h1>Match Centre</h1>
+        <p>Fixtures, live coverage and completed IPL match records.</p>
       </div>
-      <div className="live-orbit"><div className="live-orbit-core"><Activity size={34}/></div><span>REAL-TIME<br/>DATA LAYER</span></div>
+      <div className="archive-note"><Trophy size={16}/> Historical IPL archive</div>
     </div>
 
     <div className="live-toolbar">
-      <div className="live-tabs">
-        {(["live", "upcoming", "finished"] as const).map(item => <button key={item} className={tab === item ? "live-tab active" : "live-tab"} onClick={() => { setTab(item); setSelected(null); setDetail(null); }}>{item === "finished" ? "Results" : item === "upcoming" ? "Upcoming" : "Live"}{item === "live" && <i/>}</button>)}
+      <div className="live-tabs" role="tablist" aria-label="Match category">
+        {(["live", "upcoming", "finished"] as const).map(item =>
+          <button key={item} role="tab" aria-selected={tab === item}
+            className={tab === item ? "live-tab active" : "live-tab"}
+            onClick={() => { setTab(item); setError(""); }}>
+            {item === "finished" ? "Results" : item === "upcoming" ? "Upcoming" : "Live"}
+          </button>
+        )}
       </div>
-      <button className="refresh-button" onClick={() => load(true)} disabled={refreshing}><RefreshCw size={15} className={refreshing ? "refresh-spin" : ""}/> Refresh</button>
+      <button className="refresh-button" onClick={() => load(true)} disabled={refreshing}>
+        <RefreshCw size={14} className={refreshing ? "refresh-spin" : ""}/> Refresh
+      </button>
     </div>
 
-    {!configured && <div className="provider-setup panel">
-      <div className="setup-icon"><AlertCircle size={22}/></div>
-      <div><span className="eyebrow">LIVE FEED NOT CONNECTED</span><h2>Connect a verified cricket data source</h2>
-        <p>The match centre is ready, but it will not invent scores. Add a Cricket Database API key to the FastAPI environment to unlock live, upcoming and completed match feeds.</p>
-        <div className="setup-steps"><span>01 · Create a provider key</span><span>02 · Add CRICKET_DATABASE_API_KEY to api/.env</span><span>03 · Restart FastAPI</span></div>
-        <a href="https://cricketdatabase.com/documentation/live" target="_blank" rel="noreferrer">View live API documentation ↗</a>
+    {tab === "finished" ? <>
+      <div className="results-toolbar">
+        <div><span className="match-section-label">COMPLETED MATCHES</span><h2>IPL results archive</h2></div>
+        <label>Season
+          <select value={season} onChange={e => setSeason(e.target.value)}>
+            <option value="All">All seasons</option>
+            {seasons.map(value => <option key={value} value={value}>{value}</option>)}
+          </select>
+        </label>
       </div>
-    </div>}
-
-    {configured && error && <div className="live-error"><AlertCircle size={16}/>{error}</div>}
-    {configured && <div className="live-layout">
-      <div className="match-list-column">
-        <div className="list-heading"><div><span className="eyebrow">{countLabel}</span><h2>{tab === "live" ? "Matches in progress" : tab === "upcoming" ? "Coming up" : "Recent results"}</h2></div><span className="match-count">{matches.length} MATCHES</span></div>
-        {loading ? <div className="live-empty"><div className="loader"/> Fetching match centre…</div> : !matches.length ? <div className="live-empty"><Trophy size={25}/><b>No {tab === "live" ? "live" : tab === "upcoming" ? "upcoming" : "completed"} matches returned</b><span>The provider currently has no matches in this category.</span></div> : matches.map(match => <button key={match.match} className={selected?.match === match.match ? "match-tile selected" : "match-tile"} onClick={() => openMatch(match)}>
-          <div className="match-tile-top"><span>{match.competition || "Cricket"}</span><span className={match.state === "live" ? "match-state live" : "match-state"}>{match.state === "live" ? "● LIVE" : match.state || tab}</span></div>
-          <div className="match-teams">{(match.teams || []).slice(0, 2).map((team, i) => <div key={team.name} className="match-team"><b>{team.name}</b><strong>{team.score || "—"}</strong></div>)}</div>
-          <div className="match-tile-bottom"><span>{match.format || "Match"} · {match.venue || match.city || "Venue TBC"}</span><span>{match.status || timeLabel(match.starts_at)}</span></div>
-        </button>)}
-        <div className="provider-foot"><span><i/> API KEY CONFIGURED</span><span>Updated {lastUpdated ? timeLabel(lastUpdated) : "—"}</span></div>
+      {error && <div className="match-info"><AlertCircle size={16}/>{error}</div>}
+      {loading ? <div className="match-loading">Loading match results…</div> :
+        <div className="results-table-wrap">
+          <table className="results-table">
+            <thead><tr><th>DATE</th><th>MATCH</th><th>WINNER</th><th>RESULT</th><th>PLAYER OF THE MATCH</th><th>VENUE</th></tr></thead>
+            <tbody>
+              {visibleResults.map(row => <tr key={row.match_id}>
+                <td><span className="result-date">{dateLabel(row.date)}</span><small>{row.season}</small></td>
+                <td><b>{row.team1}</b><span className="versus-label">vs</span><b>{row.team2}</b></td>
+                <td>{row.winner ? <span className="winner-label">{row.winner}</span> : "No result"}</td>
+                <td>{row.result || "Result unavailable"}</td>
+                <td>{row.player_of_match || "—"}</td>
+                <td>{row.venue || "—"}</td>
+              </tr>)}
+            </tbody>
+          </table>
+          {!visibleResults.length && <div className="match-loading">No results found for this season.</div>}
+        </div>
+      }
+      <p className="data-footnote">Results are from the project's processed historical IPL dataset. Ball-by-ball scorecards are not included in this archive view.</p>
+    </> : <>
+      <div className="results-toolbar">
+        <div><span className="match-section-label">{tab === "live" ? "LIVE COVERAGE" : "FIXTURE LIST"}</span>
+          <h2>{tab === "live" ? "Matches in progress" : "Upcoming fixtures"}</h2></div>
+        <span className="updated-label">{lastUpdated ? "Checked " + new Date(lastUpdated).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Provider feed"}</span>
       </div>
-      <div className="match-detail-column">
-        {!selected ? <div className="detail-empty"><Activity size={28}/><h3>Select a match</h3><p>Choose a fixture to open its detailed match view.</p></div> : <div className="panel live-detail">
-          <div className="detail-kicker"><span className="eyebrow">{selected.competition || "MATCH CENTRE"}</span><span>{selected.format}</span></div>
-          <h2>{selected.name}</h2>
-          <p className="detail-venue"><MapPin size={13}/>{selected.venue || selected.city || "Venue unavailable"}</p>
-          <div className="detail-score-grid">{(selected.teams || []).slice(0, 2).map(team => <div key={team.name}><span>{team.name}</span><b>{team.score || "—"}</b></div>)}</div>
-          <div className="match-status-line">{selected.status || selected.state}</div>
-          {detail ? <div className="detail-extra">
-            {detail.toss && <p><b>Toss</b><span>{detail.toss}</span></p>}
-            {detail.batting && <p><b>Batting</b><span>{detail.batting}</span></p>}
-            {detail.now?.batting?.length > 0 && <div className="live-now-block"><h3>At the crease</h3>{detail.now.batting.map((batter: any) => <div className="live-player-line" key={batter.player}><b>{batter.name}{batter.on_strike ? " *" : ""}</b><span>{batter.runs} ({batter.balls}) · SR {batter.strike_rate}</span></div>)}{detail.now.bowler && <div className="live-player-line bowler-line"><b>{detail.now.bowler.name}</b><span>{detail.now.bowler.overs} ov · {detail.now.bowler.runs} runs · {detail.now.bowler.wickets} wkts</span></div>}</div>}
-            {detail.now?.partnership && <p><b>Partnership</b><span>{detail.now.partnership.runs} runs · {detail.now.partnership.balls} balls</span></p>}
-            {detail.last_ball && <p><b>Latest ball</b><span>{detail.last_ball}</span></p>}
-            {detail.scorecard?.map((innings: any, index: number) => <div className="innings-block" key={index}><b>{innings.team || "Innings"} · {innings.runs}/{innings.wickets}</b><span>{innings.overs} overs · RR {innings.run_rate ?? "—"}</span></div>)}
-            {detail.updated_at && <small>Provider update: {timeLabel(detail.updated_at)}</small>}
-          </div> : <div className="detail-loading">{selected ? "Loading scorecard…" : ""}</div>}
-          <div className="detail-disclaimer"><Clock3 size={13}/> Provider timestamps are shown as received. Provider data refreshes approximately every 60 seconds.</div>
-        </div>}
-      </div>
-    </div>}
-    <div className="live-bottom-note">Historical IPL analytics remain available in the workspace. Live coverage depends on provider plan, match availability and API key permissions.</div>
+      {error && <div className="match-info"><AlertCircle size={16}/><span>{error}</span></div>}
+      {loading ? <div className="match-loading">Checking the cricket data provider…</div> :
+        liveMatches.length ? <div className="provider-match-list">{liveMatches.map(match =>
+          <article className="provider-match-row" key={match.match}>
+            <div><span className="match-section-label">{match.competition || "CRICKET"}</span><h3>{match.name || match.match}</h3>
+              <small>{match.format || "Match"} · {match.venue || "Venue unavailable"}</small></div>
+            <div className="provider-match-teams">{(match.teams || []).slice(0, 2).map(team =>
+              <div key={team.name}><b>{team.name}</b><strong>{team.score || "—"}</strong></div>)}</div>
+            <span className="provider-match-status">{match.status || match.state || dateLabel(match.starts_at)}</span>
+          </article>)}</div> :
+          !error && <div className="match-loading">No matches are currently listed in this category.</div>
+      }
+      <p className="data-footnote">Live and fixture listings depend on the connected provider's plan and feed availability. No scores or fixtures are simulated.</p>
+    </>}
+    <div className="match-centre-footer"><span><Clock3 size={13}/> Data checked from the configured source</span><span>IPL INTELLIGENCE</span></div>
   </section>;
 }
