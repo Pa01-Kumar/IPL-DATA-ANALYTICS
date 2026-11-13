@@ -121,12 +121,16 @@ export default function LiveCentre() {
     {tab === "finished" ? <>
       <div className="results-toolbar">
         <div><span className="match-section-label">COMPLETED MATCHES</span><h2>IPL results archive</h2></div>
-        <label>Season
-          <select value={season} onChange={e => setSeason(e.target.value)}>
-            <option value="All">All seasons</option>
-            {seasons.map(value => <option key={value} value={value}>{value}</option>)}
-          </select>
-        </label>
+        <div className="results-controls">
+          <label className="results-search"><Search size={14}/><input value={resultSearch} onChange={e => setResultSearch(e.target.value)} placeholder="Search teams, players or venue" aria-label="Search results"/></label>
+          <label className="results-season">Season
+            <select value={season} onChange={e => setSeason(e.target.value)}>
+              <option value="All">All seasons</option>
+              {seasons.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <span className="results-count">{visibleResults.length} matches</span>
+        </div>
       </div>
       {error && <div className="match-info"><AlertCircle size={16}/>{error}</div>}
       {loading ? <div className="match-loading">Loading match results…</div> :
