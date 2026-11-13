@@ -6,15 +6,17 @@ import {
   Command, Compass, Crosshair, Gauge, LayoutDashboard, Menu, Search, Shield,
   SlidersHorizontal, Sparkles, Swords, Trophy, Users, X
 } from "lucide-react";
+import LiveCentre from "./live/LiveCentre";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer,
   Tooltip, XAxis, YAxis
 } from "recharts";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-type PageKey = "Overview" | "Players" | "Teams" | "Venues" | "Matchups" | "Impact" | "Win Probability" | "Franchise Fit";
+type PageKey = "Live Centre" | "Overview" | "Players" | "Teams" | "Venues" | "Matchups" | "Impact" | "Win Probability" | "Franchise Fit";
 type AnyRow = Record<string, any>;
 const nav: { label: PageKey; icon: any; group: string }[] = [
+  { label: "Live Centre", icon: Activity, group: "MATCH CENTRE" },
   { label: "Overview", icon: LayoutDashboard, group: "WORKSPACE" },
   { label: "Players", icon: Users, group: "WORKSPACE" },
   { label: "Teams", icon: Shield, group: "WORKSPACE" },
@@ -91,7 +93,7 @@ export default function Home() {
     <aside className={`sidebar ${mobileNav ? "sidebar-open" : ""}`}>
       <div className="brand"><div className="brand-mark">✦</div><div><b>IPL<span>INTELLIGENCE</span></b><small>CRICKET, DECODED.</small></div><button className="mobile-close" onClick={() => setMobileNav(false)}><X/></button></div>
       <div className="workspace-label">PLATFORM</div>
-      {["WORKSPACE", "INTELLIGENCE"].map(group => <div className="nav-group" key={group}><p>{group}</p>{nav.filter(n => n.group === group).map(item => {
+      {["MATCH CENTRE", "WORKSPACE", "INTELLIGENCE"].map(group => <div className="nav-group" key={group}><p>{group}</p>{nav.filter(n => n.group === group).map(item => {
         const Icon = item.icon; return <button key={item.label} className={page === item.label ? "nav-item active" : "nav-item"} onClick={() => {setPage(item.label);setMobileNav(false);}}><Icon size={18}/><span>{item.label}</span>{page === item.label && <i/>}</button>;
       })}</div>)}
       <div className="sidebar-bottom"><div className="live-dot"/> HISTORICAL DATA ENGINE <small>Cricsheet · Processed IPL archive</small></div>
@@ -102,6 +104,7 @@ export default function Home() {
       <div className="content">
         {error && <div className="error-banner">{error}</div>}
         {loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
+          {page === "Live Centre" && <LiveCentre/>}
           {page === "Overview" && <Overview data={overview}/>}
           {page === "Players" && <Players rows={filteredPlayers} search={search} setSearch={setSearch} role={role} setRole={setRole} onSelect={openPlayer}/>}
           {page === "Teams" && <Teams rows={teams} teamA={teamA} teamB={teamB} setTeamA={setTeamA} setTeamB={setTeamB} compare={compare} result={comparison}/>}
@@ -111,7 +114,7 @@ export default function Home() {
           {page === "Win Probability" && <WinProbability/>}
           {page === "Franchise Fit" && <Shortlist rows={shortlist}/>}\n          {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)}/>}
         </>}
-        <footer className="footer"><span>IPL INTELLIGENCE © 2026</span><span>BUILT ON HISTORICAL CRICSHEET DATA · NOT A LIVE FEED</span></footer>
+        <footer className="footer"><span>IPL INTELLIGENCE © 2026</span><span>HISTORICAL ANALYTICS + LIVE DATA PROVIDER</span></footer>
       </div>
     </section>
   </main>;
