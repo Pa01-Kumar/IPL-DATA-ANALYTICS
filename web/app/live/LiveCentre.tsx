@@ -16,7 +16,7 @@ type Result = {
   result?: string;
   player_of_match?: string | null;
 };
-type ScorecardInnings = { innings: number; batting_team: string; bowling_team: string; runs: number; wickets: number; overs: string; run_rate: number; extras: number; batting: { player: string; runs: number; balls: number; fours: number; sixes: number; strike_rate: number; dismissal: string }[]; bowling: { player: string; overs: string; maidens: number; runs: number; wickets: number; economy: number }[]; fall_of_wickets: { wicket: number; score: number; overs: string; player: string; type: string }[]; over_summary: { over: number; runs: number; wickets: number; balls: number }[] };
+type ScorecardInnings = { innings: number; batting_team: string; bowling_team: string; runs: number; wickets: number; overs: string; run_rate: number; extras: number; batting: { player: string; runs: number; balls: number; fours: number; sixes: number; strike_rate: number; dismissal: string }[]; bowling: { player: string; overs: string; maidens: number; runs: number; wickets: number; economy: number }[]; fall_of_wickets: { wicket: number; score: number; overs: string; player: string; type: string }[]; over_summary: { over: number; runs: number; wickets: number; balls: number }[]; partnerships: { partnership: number; batters: string[]; runs: number; balls: number; score_at_end: number; ended_by: string; wicket_type: string }[]; deliveries: { over_ball: string; over: number; ball: number; batter: string; non_striker: string; bowler: string; bat_runs: number; extras: number; total_runs: number; is_wicket: boolean; wicket: string }[] };
 type LiveMatch = {
   match: string;
   name?: string;
@@ -217,6 +217,14 @@ scorecard.map(inn => <div className="scorecard-innings" key={inn.innings}>
 <section className="scorecard-panel"><h4>Fall of wickets</h4><div className="scorecard-fow-list">{inn.fall_of_wickets.length ? inn.fall_of_wickets.map(w => <span key={w.wicket}><b>{w.wicket}-{w.score}</b><small>{w.player} · {w.overs} ov</small></span>) : <p>No wickets recorded.</p>}</div></section>
 <section className="scorecard-panel"><h4>Over-by-over</h4><div className="scorecard-over-list">{inn.over_summary.map(o => <span key={o.over}><b>{o.over}</b><strong>{o.runs}{o.wickets ? `/${o.wickets}` : ""}</strong></span>)}</div></section>
 </div>
+<section className="scorecard-extra-section">
+<div className="scorecard-section-heading"><h4>Partnerships</h4><span>{inn.partnerships.length} stands</span></div>
+<div className="scorecard-table-scroll"><table className="scorecard-table scorecard-partnership-table"><thead><tr><th>Wicket / stand</th><th>Batters</th><th>Runs</th><th>Balls</th><th>Score</th><th>Ended</th></tr></thead><tbody>{inn.partnerships.map(p => <tr key={p.partnership}><td><b>{p.partnership}{p.ended_by === "Not out" ? " · not out" : " wicket"}</b></td><td className="scorecard-partners">{p.batters.join(" & ") || "—"}</td><td><strong>{p.runs}</strong></td><td>{p.balls}</td><td>{p.score_at_end}</td><td>{p.ended_by}</td></tr>)}</tbody></table></div>
+</section>
+<section className="scorecard-extra-section">
+<div className="scorecard-section-heading"><h4>Ball-by-ball</h4><span>{inn.deliveries.length} deliveries · chronological</span></div>
+<div className="scorecard-delivery-wrap"><table className="scorecard-table scorecard-delivery-table"><thead><tr><th>Over</th><th>Batter</th><th>Bowler</th><th>Bat</th><th>Extras</th><th>Total</th><th>Event</th></tr></thead><tbody>{inn.deliveries.map((d, index) => <tr key={index} className={d.is_wicket ? "scorecard-wicket-row" : ""}><td><b>{d.over_ball}</b></td><td>{d.batter}{d.non_striker ? <small>Non-striker: {d.non_striker}</small> : null}</td><td>{d.bowler}</td><td>{d.bat_runs}</td><td>{d.extras || "—"}</td><td><strong>{d.total_runs}</strong></td><td>{d.is_wicket ? <span className="scorecard-wicket-tag">WICKET · {d.wicket || "Dismissal"}</span> : d.total_runs === 4 ? <span className="scorecard-boundary-tag">FOUR</span> : d.total_runs === 6 ? <span className="scorecard-boundary-tag">SIX</span> : "—"}</td></tr>)}</tbody></table></div>
+</section>
 </div>)}</div>
 <footer className="match-detail-footer"><span>Source: processed IPL historical records</span><button type="button" onClick={() => setSelectedMatch(null)}>Back to results</button></footer></section></div>}
     </> : <>
