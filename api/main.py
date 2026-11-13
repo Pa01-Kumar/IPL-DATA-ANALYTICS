@@ -303,7 +303,6 @@ def historical_scorecard(match_id: str):
         stand_runs = 0
         stand_balls = 0
         stand_batters = []
-        stand_start_score = 0
         innings_score = 0
         for _, delivery in group.iterrows():
             striker = str(delivery.get("striker") or "")
@@ -314,7 +313,6 @@ def historical_scorecard(match_id: str):
             bat_runs = int(delivery.get("runs_off_bat", 0) or 0)
             extra_runs = int(delivery.get("extras", 0) or 0)
             ball_runs = int(delivery.get("total_runs", 0) or 0)
-            is_legal_ball = int(delivery.get("is_legal", 0) or 0)
             wides = int(delivery.get("wides", 0) or 0)
             innings_score += ball_runs
             stand_runs += ball_runs
@@ -355,7 +353,6 @@ def historical_scorecard(match_id: str):
                 stand_runs = 0
                 stand_balls = 0
                 stand_batters = []
-                stand_start_score = innings_score
         if stand_runs or stand_balls or stand_batters:
             partnerships.append({
                 "partnership": len(partnerships) + 1,
