@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity, ArrowDownRight, ArrowUpRight, BarChart3, ChevronDown, CircleHelp,
   Command, Compass, Crosshair, Gauge, LayoutDashboard, Menu, Search, Shield,
-  SlidersHorizontal, Sparkles, Swords, Trophy, Users, X
+  SlidersHorizontal, Swords, Trophy, Users, X
 } from "lucide-react";
 import LiveCentre from "./live/LiveCentre";
 import {
@@ -100,7 +100,7 @@ export default function Home() {
     </aside>
 
     <section className="main-area">
-      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileNav(true)}><Menu/></button><div className="breadcrumb">IPL INTELLIGENCE <span>/</span> {page.toUpperCase()}</div><div className="top-actions"><span className="status"><i/> DATA ENGINE</span><div className="avatar">PK</div></div></header>
+      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileNav(true)}><Menu/></button><div className="breadcrumb">IPL INTELLIGENCE <span>/</span> {page.toUpperCase()}</div><div className="top-actions"><span className="status"><i/> HISTORICAL DATA</span><div className="avatar">PK</div></div></header>
       <div className="content">
         {error && <div className="error-banner">{error}</div>}
         {page === "Live Centre" ? <LiveCentre/> : loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
@@ -122,7 +122,7 @@ export default function Home() {
 
 function Overview({data}: {data: AnyRow}) {
   const s=data.summary;
-  return <><div className="hero"><div className="hero-copy"><span className="eyebrow"><Sparkles size={13}/> THE IPL DATA ROOM</span><h1>See the game<br/><em>before it unfolds.</em></h1><p>Performance intelligence, player discovery and franchise strategy — all in one place.</p><div className="hero-meta"><span><i/> DATA THROUGH {s.lastSeason}</span><span>SEASONS {s.firstSeason}—{s.lastSeason}</span></div></div><div className="hero-art"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="cricket-ball">✦</div><div className="hero-art-label">MATCH<br/>INTELLIGENCE</div></div></div>
+  return <><div className="hero"><div className="hero-copy"><span className="eyebrow">IPL SEASON OVERVIEW</span><h1>Indian Premier League<br/><em>at a glance.</em></h1><p>Explore match records, team performance and player statistics from the historical IPL archive.</p><div className="hero-meta"><span><i/> DATA THROUGH {s.lastSeason}</span><span>SEASONS {s.firstSeason}—{s.lastSeason}</span></div></div><div className="hero-art"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="cricket-ball">✦</div><div className="hero-art-label">MATCH<br/>INTELLIGENCE</div></div></div>
     <div className="metrics-grid"><Metric label="Matches analysed" value={fmt(s.matches)} note="Across the processed archive" icon={Trophy}/><Metric label="Seasons covered" value={fmt(s.seasons)} note={`${s.firstSeason} to ${s.lastSeason}`} icon={BarChart3}/><Metric label="Players indexed" value={fmt(s.players)} note="Batting, bowling & impact" icon={Users}/><Metric label="Teams tracked" value={fmt(s.teams)} note="Historical franchise records" icon={Shield}/></div>
     <div className="dashboard-grid"><section className="panel panel-wide"><SectionTitle eyebrow="SEASON BY SEASON" title="Scoring landscape" detail="Matches recorded across each IPL season."/><div className="chart-wrap"><ResponsiveContainer width="100%" height={260}><AreaChart data={data.seasonTrend}><defs><linearGradient id="seasonFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#b7f36b" stopOpacity={0.28}/><stop offset="100%" stopColor="#b7f36b" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#263244" vertical={false}/><XAxis dataKey="season" stroke="#728096" tickLine={false} axisLine={false}/><YAxis stroke="#728096" tickLine={false} axisLine={false}/><Tooltip contentStyle={{background:"#111b2a",border:"1px solid #2c394c",borderRadius:12}}/><Area type="monotone" dataKey="matches" stroke="#b7f36b" strokeWidth={2.5} fill="url(#seasonFill)"/></AreaChart></ResponsiveContainer></div></section>
     <section className="panel"><SectionTitle eyebrow="MOST WINS" title="Franchise leaders" detail="Matches won in the dataset."/><div className="rank-list">{data.teamWins.slice(0,7).map((t:AnyRow,i:number)=><div className="rank-row" key={t.team}><span className="rank-number">{String(i+1).padStart(2,"0")}</span><span className="rank-name">{t.team}</span><b>{t.wins}</b></div>)}</div></section></div>
