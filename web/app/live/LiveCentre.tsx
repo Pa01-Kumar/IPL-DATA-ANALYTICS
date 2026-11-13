@@ -216,7 +216,7 @@ scorecard.map(inn => <div className="scorecard-innings" key={inn.innings}>
 <div className="scorecard-bottom-grid">
 <section className="scorecard-panel"><h4>Fall of wickets</h4><div className="scorecard-fow-list">{inn.fall_of_wickets.length ? inn.fall_of_wickets.map(w => <span key={w.wicket}><b>{w.wicket}-{w.score}</b><small>{w.player} · {w.overs} ov</small></span>) : <p>No wickets recorded.</p>}</div></section>
 <section className="scorecard-panel"><h4>Over-by-over</h4><div className="scorecard-over-list">{inn.over_summary.map(o => <span key={o.over}><b>{o.over}</b><strong>{o.runs}{o.wickets ? `/${o.wickets}` : ""}</strong></span>)}</div></section>
-</div>/div>
+</div></div>
 </div>)}</div>
 <footer className="match-detail-footer"><span>Source: processed IPL historical records</span><button type="button" onClick={() => setSelectedMatch(null)}>Back to results</button></footer></section></div>}
     </> : <>
