@@ -16,6 +16,7 @@ type Result = {
   result?: string;
   player_of_match?: string | null;
 };
+type ScorecardInnings = { innings: number; batting_team: string; bowling_team: string; runs: number; wickets: number; overs: string; run_rate: number; extras: number; batting: { player: string; runs: number; balls: number; fours: number; sixes: number; strike_rate: number; dismissal: string }[]; bowling: { player: string; overs: string; maidens: number; runs: number; wickets: number; economy: number }[]; fall_of_wickets: { wicket: number; score: number; overs: string; player: string; type: string }[]; over_summary: { over: number; runs: number; wickets: number; balls: number }[] };
 type LiveMatch = {
   match: string;
   name?: string;
@@ -49,6 +50,9 @@ export default function LiveCentre() {
   const [lastUpdated, setLastUpdated] = useState("");
   const [resultsPage, setResultsPage] = useState(1);
   const [selectedMatch, setSelectedMatch] = useState<Result | null>(null);
+  const [scorecard, setScorecard] = useState<ScorecardInnings[]>([]);
+  const [scorecardLoading, setScorecardLoading] = useState(false);
+  const [scorecardError, setScorecardError] = useState("");
   const pageSize = 15;
 
   const load = useCallback(async (quiet = false) => {
@@ -101,6 +105,17 @@ export default function LiveCentre() {
   const pageEnd = Math.min(resultsPage * pageSize, visibleResults.length);
 
   useEffect(() => { setResultsPage(1); }, [resultSearch, season]);
+  useEffect(() => {
+    if (!selectedMatch) { setScorecard([]); setScorecardError(""); return; }
+    const controller = new AbortController();
+    setScorecardLoading(true); setScorecardError(""); setScorecard([]);
+    fetch(API + "/api/results/" + encodeURIComponent(String(selectedMatch.match_id)) + "/scorecard", { cache: "no-store", signal: controller.signal })
+      .then(async response => { const body = await response.json(); if (!response.ok) throw new Error(body.detail || "Scorecard unavailable."); return body; })
+      .then(body => setScorecard(body.innings || []))
+      .catch(error => { if (error.name !== "AbortError") setScorecardError(error.message || "Unable to load scorecard."); })
+      .finally(() => { if (!controller.signal.aborted) setScorecardLoading(false); });
+    return () => controller.abort();
+  }, [selectedMatch]);
   useEffect(() => { if (!selectedMatch) return;
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedMatch(null); };
     document.addEventListener("keydown", onKeyDown); document.body.style.overflow = "hidden";
@@ -190,7 +205,14 @@ export default function LiveCentre() {
 <div><MapPin size={15}/><span><small>VENUE</small><b>{selectedMatch.venue || "Not available"}</b></span></div>
 <div><Award size={15}/><span><small>PLAYER OF THE MATCH</small><b>{selectedMatch.player_of_match || "Not recorded"}</b></span></div>
 <div><Trophy size={15}/><span><small>MATCH ID</small><b>#{selectedMatch.match_id}</b></span></div></div>
-<div className="match-detail-scorecard"><div><h3>Scorecard</h3><span>Historical archive</span></div><p>Ball-by-ball innings and individual batting or bowling figures are not included in the current results dataset. They are not displayed as estimates.</p></div>
+<div className="match-detail-scorecard"><div><h3>Scorecard</h3><span>Historical ball-by-ball archive</span></div>
+{scorecardLoading ? <p>Loading innings scorecard…</p> : scorecardError ? <p>{scorecardError}</p> : !scorecard.length ? <p>No delivery scorecard is available for this match.</p> :
+scorecard.map(inn => <div className="scorecard-innings" key={inn.innings}>
+<div className="scorecard-innings-heading"><strong>{inn.batting_team}</strong><b>{inn.runs}/{inn.wickets}</b><span>{inn.overs} overs · RR {inn.run_rate}</span></div>
+<div className="scorecard-columns"><div><h4>Batting</h4><div className="scorecard-table-scroll"><table className="scorecard-table"><thead><tr><th>Batter</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead><tbody>{inn.batting.map(p => <tr key={p.player}><td><b>{p.player}</b><small>{p.dismissal}</small></td><td>{p.runs}</td><td>{p.balls}</td><td>{p.fours}</td><td>{p.sixes}</td><td>{p.strike_rate}</td></tr>)}</tbody></table></div><p className="scorecard-extras">Extras: {inn.extras} · Total: {inn.runs}/{inn.wickets}</p></div>
+<div><h4>Bowling</h4><div className="scorecard-table-scroll"><table className="scorecard-table"><thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Eco</th></tr></thead><tbody>{inn.bowling.map(p => <tr key={p.player}><td><b>{p.player}</b></td><td>{p.overs}</td><td>{p.runs}</td><td>{p.wickets}</td><td>{p.economy}</td></tr>)}</tbody></table></div></div></div>
+<div className="scorecard-bottom-grid"><div><h4>Fall of wickets</h4><p>{inn.fall_of_wickets.length ? inn.fall_of_wickets.map(w => `${w.wicket}-${w.score} (${w.player}, ${w.overs} ov)`).join(" · ") : "No wickets recorded."}</p></div><div><h4>Over-by-over</h4><div className="scorecard-over-list">{inn.over_summary.map(o => <span key={o.over}><b>{o.over}</b> {o.runs}{o.wickets ? `/${o.wickets}` : ""}</span>)}</div></div></div>
+</div>)}</div>
 <footer className="match-detail-footer"><span>Source: processed IPL historical records</span><button type="button" onClick={() => setSelectedMatch(null)}>Back to results</button></footer></section></div>}
     </> : <>
       <div className="results-toolbar">
