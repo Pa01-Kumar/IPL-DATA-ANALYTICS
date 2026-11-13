@@ -298,13 +298,82 @@ def historical_scorecard(match_id: str):
                 if pd.notna(player) and str(player).strip():
                     fow.append({"wicket": len(fow)+1, "score": cumulative, "overs": f"{legal_so_far // 6}.{legal_so_far % 6}",
                         "player": str(player), "type": str(delivery.get("wicket_type") or "out")})
+        # Build partnerships and a chronological delivery log from the same source rows.
+        partnerships, deliveries = [], []
+        stand_runs = 0
+        stand_balls = 0
+        stand_batters = []
+        stand_start_score = 0
+        innings_score = 0
+        for _, delivery in group.iterrows():
+            striker = str(delivery.get("striker") or "")
+            non_striker = str(delivery.get("non_striker") or "")
+            for batter_name in [striker, non_striker]:
+                if batter_name and batter_name not in stand_batters:
+                    stand_batters.append(batter_name)
+            bat_runs = int(delivery.get("runs_off_bat", 0) or 0)
+            extra_runs = int(delivery.get("extras", 0) or 0)
+            ball_runs = int(delivery.get("total_runs", 0) or 0)
+            is_legal_ball = int(delivery.get("is_legal", 0) or 0)
+            wides = int(delivery.get("wides", 0) or 0)
+            innings_score += ball_runs
+            stand_runs += ball_runs
+            if wides == 0:
+                stand_balls += 1
+            over_number = int(delivery.get("over", 0) or 0) + 1
+            ball_number = int(delivery.get("ball_in_over", 0) or 0)
+            dismissed = []
+            for field in ["player_dismissed", "other_player_dismissed"]:
+                dismissed_name = delivery.get(field)
+                if pd.notna(dismissed_name) and str(dismissed_name).strip():
+                    dismissed.append(str(dismissed_name))
+            wicket_type = delivery.get("wicket_type")
+            wicket_label = str(wicket_type) if pd.notna(wicket_type) and str(wicket_type).strip() else ""
+            deliveries.append({
+                "over_ball": f"{over_number}.{ball_number}",
+                "over": over_number,
+                "ball": ball_number,
+                "batter": striker,
+                "non_striker": non_striker,
+                "bowler": str(delivery.get("bowler") or ""),
+                "bat_runs": bat_runs,
+                "extras": extra_runs,
+                "total_runs": ball_runs,
+                "is_wicket": bool(int(delivery.get("is_wicket", 0) or 0)),
+                "wicket": (", ".join(dismissed) + (f" · {wicket_label}" if wicket_label else "")) if dismissed else "",
+            })
+            if dismissed:
+                partnerships.append({
+                    "partnership": len(partnerships) + 1,
+                    "batters": stand_batters[:2],
+                    "runs": stand_runs,
+                    "balls": stand_balls,
+                    "score_at_end": innings_score,
+                    "ended_by": ", ".join(dismissed),
+                    "wicket_type": wicket_label,
+                })
+                stand_runs = 0
+                stand_balls = 0
+                stand_batters = []
+                stand_start_score = innings_score
+        if stand_runs or stand_balls or stand_batters:
+            partnerships.append({
+                "partnership": len(partnerships) + 1,
+                "batters": stand_batters[:2],
+                "runs": stand_runs,
+                "balls": stand_balls,
+                "score_at_end": innings_score,
+                "ended_by": "Not out",
+                "wicket_type": "",
+            })
         overs = [{"over": int(over)+1, "runs": int(rows["total_runs"].sum()), "wickets": int(rows["is_wicket"].sum()),
                   "balls": int(rows["is_legal"].sum())} for over, rows in group.groupby("over", sort=True)]
         innings_cards.append({"innings": int(number), "batting_team": str(group["batting_team"].dropna().iloc[0]),
             "bowling_team": str(group["bowling_team"].dropna().iloc[0]), "runs": total,
             "wickets": int(group["is_wicket"].sum()), "overs": f"{legal // 6}.{legal % 6}",
             "run_rate": round(total * 6 / legal, 2) if legal else 0, "extras": int(group["extras"].sum()),
-            "batting": batting, "bowling": bowling, "fall_of_wickets": fow, "over_summary": overs})
+            "batting": batting, "bowling": bowling, "fall_of_wickets": fow, "over_summary": overs,
+            "partnerships": partnerships, "deliveries": deliveries})
     return {"match_id": str(match_id), "innings": innings_cards, "source": "cleaned_deliveries.csv"}
 
 
