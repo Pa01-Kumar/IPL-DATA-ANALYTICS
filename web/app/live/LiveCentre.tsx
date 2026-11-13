@@ -67,6 +67,21 @@ export default function LiveCentre() {
     return () => window.clearInterval(timer);
   }, [configured, tab, load]);
 
+  useEffect(() => {
+    if (!configured || tab !== "live" || !selected?.match) return;
+    const refreshSelected = async () => {
+      try {
+        const response = await fetch(API + "/api/live/matches/" + encodeURIComponent(selected.match), { cache: "no-store" });
+        const body = await response.json();
+        if (response.ok) setDetail(body?.data || body);
+      } catch {
+        // Keep the last successful scorecard visible if a refresh briefly fails.
+      }
+    };
+    const timer = window.setInterval(refreshSelected, 20000);
+    return () => window.clearInterval(timer);
+  }, [configured, tab, selected?.match]);
+
   async function openMatch(match: Match) {
     setSelected(match);
     setDetail(null);
