@@ -47,6 +47,8 @@ export default function LiveCentre() {
   const [season, setSeason] = useState("All");
   const [resultSearch, setResultSearch] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
+  const [resultsPage, setResultsPage] = useState(1);
+  const pageSize = 15;
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true);
@@ -92,6 +94,12 @@ export default function LiveCentre() {
       .some(value => String(value || "").toLowerCase().includes(q));
     return matchesSeason && matchesQuery;
   });
+  const pageCount = Math.max(1, Math.ceil(visibleResults.length / pageSize));
+  const pageResults = visibleResults.slice((resultsPage - 1) * pageSize, resultsPage * pageSize);
+  const pageStart = visibleResults.length ? (resultsPage - 1) * pageSize + 1 : 0;
+  const pageEnd = Math.min(resultsPage * pageSize, visibleResults.length);
+
+  useEffect(() => { setResultsPage(1); }, [resultSearch, season]);
 
   return <section className="live-centre">
     <div className="match-centre-heading">
@@ -129,7 +137,7 @@ export default function LiveCentre() {
               {seasons.map(value => <option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <span className="results-count">{visibleResults.length} matches</span>
+          <span className="results-count">{pageStart}–{pageEnd} of {visibleResults.length}</span>
           {(resultSearch || season !== "All") && <button className="results-clear" onClick={() => { setResultSearch(""); setSeason("All"); }}>Clear filters</button>}
         </div>
       </div>
@@ -145,7 +153,7 @@ export default function LiveCentre() {
           <table className="results-table">
             <thead><tr><th>DATE</th><th>MATCH</th><th>WINNER</th><th>RESULT</th><th>PLAYER OF THE MATCH</th><th>VENUE</th></tr></thead>
             <tbody>
-              {visibleResults.map(row => <tr key={row.match_id}>
+              {pageResults.map(row => <tr key={row.match_id}>
                 <td><span className="result-date">{dateLabel(row.date)}</span><small>{row.season}</small></td>
                 <td><b>{row.team1}</b><span className="versus-label">vs</span><b>{row.team2}</b></td>
                 <td>{row.winner ? <span className="winner-label">{row.winner}</span> : "No result"}</td>
@@ -158,6 +166,14 @@ export default function LiveCentre() {
           {!visibleResults.length && <div className="match-loading">No results found for this season.</div>}
         </div>
       }
+      {!loading && visibleResults.length > pageSize && <nav className="results-pagination" aria-label="Results pages">
+        <span>Showing <b>{pageStart}–{pageEnd}</b> of <b>{visibleResults.length}</b> matches</span>
+        <div>
+          <button type="button" onClick={() => setResultsPage(value => Math.max(1, value - 1))} disabled={resultsPage === 1}>Previous</button>
+          <span>Page <b>{resultsPage}</b> of <b>{pageCount}</b></span>
+          <button type="button" onClick={() => setResultsPage(value => Math.min(pageCount, value + 1))} disabled={resultsPage === pageCount}>Next</button>
+        </div>
+      </nav>}
       <p className="data-footnote">Results are from the project's processed historical IPL dataset. Ball-by-ball scorecards are not included in this archive view.</p>
     </> : <>
       <div className="results-toolbar">
