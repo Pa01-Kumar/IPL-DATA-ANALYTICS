@@ -6,10 +6,12 @@ from typing import Any
 import joblib
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / "api" / ".env")
 DATA = ROOT / "data" / "processed"
 app = FastAPI(title="IPL Intelligence API", version="1.0.0")
 app.add_middleware(
