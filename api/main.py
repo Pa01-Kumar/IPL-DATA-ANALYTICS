@@ -239,8 +239,8 @@ def live_status():
     return {
         "configured": configured,
         "provider": "Cricket Database",
-        "message": "Live feed connected" if configured else "Add CRICKET_DATABASE_API_KEY to api/.env to enable verified live scores.",
-        "refresh_seconds": 20,
+        "message": "API key detected. Live endpoint access depends on your provider plan." if configured else "Add CRICKET_DATABASE_API_KEY to api/.env to configure the cricket data provider.",
+        "refresh_seconds": 60,
     }
 
 async def live_provider_get(path: str, params: dict | None = None):
