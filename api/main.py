@@ -246,6 +246,68 @@ def historical_results(limit: int = Query(100, ge=1, le=500), season: str | None
     return records(frame[columns])
 
 
+@app.get("/api/results/{match_id}/scorecard")
+def historical_scorecard(match_id: str):
+    """Build a scorecard from the original historical ball-by-ball deliveries."""
+    path = DATA / "cleaned_deliveries.csv"
+    if not path.exists():
+        raise HTTPException(status_code=503, detail="Historical delivery dataset unavailable.")
+    try:
+        frame = pd.read_csv(path, dtype={"match_id": str}, low_memory=False)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Unable to read historical deliveries: {exc}")
+    frame = frame[frame["match_id"].astype(str) == str(match_id)].copy()
+    if frame.empty:
+        raise HTTPException(status_code=404, detail="Ball-by-ball records not found for this match.")
+    for col in ["total_runs", "runs_off_bat", "extras", "is_legal", "is_wicket",
+                "is_bowler_wicket", "over", "wides", "byes", "legbyes", "penalty"]:
+        if col in frame:
+            frame[col] = pd.to_numeric(frame[col], errors="coerce").fillna(0)
+    sort_cols = ["innings", "actual_delivery"] if "actual_delivery" in frame else ["innings", "over", "ball_in_over"]
+    frame = frame.sort_values(sort_cols, kind="stable")
+    innings_cards = []
+    for number, group in frame.groupby("innings", sort=True):
+        total = int(group["total_runs"].sum())
+        legal = int(group["is_legal"].sum())
+        batting = []
+        for player, rows in group.groupby("striker", sort=False, dropna=True):
+            faced = rows[rows["wides"] == 0] if "wides" in rows else rows
+            outs = group[(group["player_dismissed"] == player) | (group["other_player_dismissed"] == player)]
+            dismissal = str(outs.iloc[0]["wicket_type"]) if not outs.empty and pd.notna(outs.iloc[0]["wicket_type"]) else ("out" if not outs.empty else "not out")
+            runs = int(rows["runs_off_bat"].sum())
+            batting.append({"player": str(player), "runs": runs, "balls": int(len(faced)),
+                "fours": int((rows["runs_off_bat"] == 4).sum()), "sixes": int((rows["runs_off_bat"] == 6).sum()),
+                "strike_rate": round(100 * runs / len(faced), 2) if len(faced) else 0, "dismissal": dismissal})
+        batting.sort(key=lambda x: x["runs"], reverse=True)
+        bowling = []
+        for player, rows in group.groupby("bowler", sort=False, dropna=True):
+            balls = int(rows["is_legal"].sum())
+            conceded = rows["total_runs"].copy()
+            for extra in ["byes", "legbyes", "penalty"]:
+                if extra in rows: conceded = conceded - rows[extra]
+            runs = int(conceded.clip(lower=0).sum())
+            wickets = int(rows["is_bowler_wicket"].sum())
+            bowling.append({"player": str(player), "overs": f"{balls // 6}.{balls % 6}", "maidens": 0,
+                "runs": runs, "wickets": wickets, "economy": round(runs * 6 / balls, 2) if balls else 0})
+        bowling.sort(key=lambda x: (x["wickets"], -x["economy"]), reverse=True)
+        fow, cumulative, legal_so_far = [], 0, 0
+        for _, delivery in group.iterrows():
+            cumulative += int(delivery["total_runs"]); legal_so_far += int(delivery["is_legal"])
+            for field in ["player_dismissed", "other_player_dismissed"]:
+                player = delivery.get(field)
+                if pd.notna(player) and str(player).strip():
+                    fow.append({"wicket": len(fow)+1, "score": cumulative, "overs": f"{legal_so_far // 6}.{legal_so_far % 6}",
+                        "player": str(player), "type": str(delivery.get("wicket_type") or "out")})
+        overs = [{"over": int(over)+1, "runs": int(rows["total_runs"].sum()), "wickets": int(rows["is_wicket"].sum()),
+                  "balls": int(rows["is_legal"].sum())} for over, rows in group.groupby("over", sort=True)]
+        innings_cards.append({"innings": int(number), "batting_team": str(group["batting_team"].dropna().iloc[0]),
+            "bowling_team": str(group["bowling_team"].dropna().iloc[0]), "runs": total,
+            "wickets": int(group["is_wicket"].sum()), "overs": f"{legal // 6}.{legal % 6}",
+            "run_rate": round(total * 6 / legal, 2) if legal else 0, "extras": int(group["extras"].sum()),
+            "batting": batting, "bowling": bowling, "fall_of_wickets": fow, "over_summary": overs})
+    return {"match_id": str(match_id), "innings": innings_cards, "source": "cleaned_deliveries.csv"}
+
+
 @app.get("/api/matches")
 def matches(limit: int = Query(100, ge=1, le=500)):
     frame = csv("matches.csv").sort_values("date", ascending=False).head(limit)
