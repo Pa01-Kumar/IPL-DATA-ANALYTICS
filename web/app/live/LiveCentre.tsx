@@ -130,6 +130,9 @@ export default function LiveCentre() {
           {detail ? <div className="detail-extra">
             {detail.toss && <p><b>Toss</b><span>{detail.toss}</span></p>}
             {detail.batting && <p><b>Batting</b><span>{detail.batting}</span></p>}
+            {detail.now?.batting?.length > 0 && <div className="live-now-block"><h3>At the crease</h3>{detail.now.batting.map((batter: any) => <div className="live-player-line" key={batter.player}><b>{batter.name}{batter.on_strike ? " *" : ""}</b><span>{batter.runs} ({batter.balls}) · SR {batter.strike_rate}</span></div>)}{detail.now.bowler && <div className="live-player-line bowler-line"><b>{detail.now.bowler.name}</b><span>{detail.now.bowler.overs} ov · {detail.now.bowler.runs} runs · {detail.now.bowler.wickets} wkts</span></div>}</div>}
+            {detail.now?.partnership && <p><b>Partnership</b><span>{detail.now.partnership.runs} runs · {detail.now.partnership.balls} balls</span></p>}
+            {detail.last_ball && <p><b>Latest ball</b><span>{detail.last_ball}</span></p>}
             {detail.scorecard?.map((innings: any, index: number) => <div className="innings-block" key={index}><b>{innings.team || "Innings"} · {innings.runs}/{innings.wickets}</b><span>{innings.overs} overs · RR {innings.run_rate ?? "—"}</span></div>)}
             {detail.updated_at && <small>Provider update: {timeLabel(detail.updated_at)}</small>}
           </div> : <div className="detail-loading">{selected ? "Loading scorecard…" : ""}</div>}
