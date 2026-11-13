@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Clock3, RefreshCw, Search, Trophy } from "lucide-react";
+import { AlertCircle, Award, CalendarDays, Clock3, MapPin, RefreshCw, Search, Trophy, X } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -48,6 +48,7 @@ export default function LiveCentre() {
   const [resultSearch, setResultSearch] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
   const [resultsPage, setResultsPage] = useState(1);
+  const [selectedMatch, setSelectedMatch] = useState<Result | null>(null);
   const pageSize = 15;
 
   const load = useCallback(async (quiet = false) => {
@@ -100,6 +101,11 @@ export default function LiveCentre() {
   const pageEnd = Math.min(resultsPage * pageSize, visibleResults.length);
 
   useEffect(() => { setResultsPage(1); }, [resultSearch, season]);
+  useEffect(() => { if (!selectedMatch) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedMatch(null); };
+    document.addEventListener("keydown", onKeyDown); document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = ""; };
+  }, [selectedMatch]);
 
   return <section className="live-centre">
     <div className="match-centre-heading">
@@ -153,7 +159,7 @@ export default function LiveCentre() {
           <table className="results-table">
             <thead><tr><th>DATE</th><th>MATCH</th><th>WINNER</th><th>RESULT</th><th>PLAYER OF THE MATCH</th><th>VENUE</th></tr></thead>
             <tbody>
-              {pageResults.map(row => <tr key={row.match_id}>
+              {pageResults.map(row => <tr key={row.match_id} className="result-match-row" tabIndex={0} role="button" aria-label={"View details for " + row.team1 + " versus " + row.team2} onClick={() => setSelectedMatch(row)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedMatch(row); } }}>
                 <td><span className="result-date">{dateLabel(row.date)}</span><small>{row.season}</small></td>
                 <td><b>{row.team1}</b><span className="versus-label">vs</span><b>{row.team2}</b></td>
                 <td>{row.winner ? <span className="winner-label">{row.winner}</span> : "No result"}</td>
@@ -174,7 +180,18 @@ export default function LiveCentre() {
           <button type="button" onClick={() => setResultsPage(value => Math.min(pageCount, value + 1))} disabled={resultsPage === pageCount}>Next</button>
         </div>
       </nav>}
-      <p className="data-footnote">Results are from the project's processed historical IPL dataset. Ball-by-ball scorecards are not included in this archive view.</p>
+      <p className="data-footnote">Select any match to open its details. Results are from the processed historical IPL dataset.</p>
+{selectedMatch && <div className="match-detail-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setSelectedMatch(null); }}>
+<section className="match-detail-modal" role="dialog" aria-modal="true" aria-labelledby="match-detail-title">
+<header className="match-detail-top"><div><span className="match-section-label">MATCH DETAILS · IPL {selectedMatch.season}</span><h2 id="match-detail-title">{selectedMatch.team1} <span>vs</span> {selectedMatch.team2}</h2></div><button type="button" className="match-detail-close" onClick={() => setSelectedMatch(null)} aria-label="Close match details"><X size={18}/></button></header>
+<div className="match-detail-result"><span className="match-detail-status"><Trophy size={14}/> COMPLETED</span><strong>{selectedMatch.winner || "Match ended without a winner"}</strong><p>{selectedMatch.result || "Final result details unavailable"}</p></div>
+<div className="match-detail-facts">
+<div><CalendarDays size={15}/><span><small>DATE</small><b>{dateLabel(selectedMatch.date)}</b></span></div>
+<div><MapPin size={15}/><span><small>VENUE</small><b>{selectedMatch.venue || "Not available"}</b></span></div>
+<div><Award size={15}/><span><small>PLAYER OF THE MATCH</small><b>{selectedMatch.player_of_match || "Not recorded"}</b></span></div>
+<div><Trophy size={15}/><span><small>MATCH ID</small><b>#{selectedMatch.match_id}</b></span></div></div>
+<div className="match-detail-scorecard"><div><h3>Scorecard</h3><span>Historical archive</span></div><p>Ball-by-ball innings and individual batting or bowling figures are not included in the current results dataset. They are not displayed as estimates.</p></div>
+<footer className="match-detail-footer"><span>Source: processed IPL historical records</span><button type="button" onClick={() => setSelectedMatch(null)}>Back to results</button></footer></section></div>}
     </> : <>
       <div className="results-toolbar">
         <div><span className="match-section-label">{tab === "live" ? "LIVE COVERAGE" : "FIXTURE LIST"}</span>
