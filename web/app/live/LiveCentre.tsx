@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarDays, Clock3, RefreshCw, Trophy } from "lucide-react";
+import { AlertCircle, CalendarDays, Clock3, RefreshCw, Search, Trophy } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -45,6 +45,7 @@ export default function LiveCentre() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [season, setSeason] = useState("All");
+  const [resultSearch, setResultSearch] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
 
   const load = useCallback(async (quiet = false) => {
@@ -84,7 +85,13 @@ export default function LiveCentre() {
 
   useEffect(() => { load(); }, [load]);
   const seasons = Array.from(new Set(results.map(row => String(row.season)))).sort((a, b) => Number(b) - Number(a));
-  const visibleResults = results.filter(row => season === "All" || String(row.season) === season);
+  const visibleResults = results.filter(row => {
+    const matchesSeason = season === "All" || String(row.season) === season;
+    const q = resultSearch.trim().toLowerCase();
+    const matchesQuery = !q || [row.team1, row.team2, row.winner, row.player_of_match, row.venue, row.result]
+      .some(value => String(value || "").toLowerCase().includes(q));
+    return matchesSeason && matchesQuery;
+  });
 
   return <section className="live-centre">
     <div className="match-centre-heading">
