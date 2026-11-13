@@ -477,3 +477,29 @@ button:focus-visible{outline:2px solid #2c86c8;outline-offset:2px}
   .results-table-wrap{overflow-x:auto}
   .results-table{min-width:850px}
 }
+
+
+/* Match Centre refinement: archive insight strip, filter actions and stronger hierarchy */
+.live-centre .results-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 16px}
+.live-centre .results-summary-card{min-width:0;padding:13px 15px;background:linear-gradient(135deg,#fff 0%,#f8fbfd 100%);border:1px solid #e1e8ed;border-radius:7px;box-shadow:0 2px 8px rgba(27,43,59,.035);position:relative;overflow:hidden}
+.live-centre .results-summary-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#3186bd,#8dc3df)}
+.live-centre .results-summary-card span{display:block;color:#75838d;font:600 8px 'Roboto Mono',monospace;letter-spacing:.75px}
+.live-centre .results-summary-card strong{display:block;margin:7px 0 3px;color:#253642;font:700 23px/1 Roboto,Arial,sans-serif;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+.live-centre .results-summary-card small{display:block;color:#87939c;font:9px/1.45 Roboto,Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live-centre .results-summary-card.results-summary-highlight{background:linear-gradient(120deg,#f1f7fb,#f8fbfd);border-color:#d6e5ef}
+.live-centre .results-summary-card.results-summary-highlight:before{background:linear-gradient(180deg,#e34d56,#f0a0a4)}
+.live-centre .results-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-centre .results-search{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;border:1px solid #dce4ea;border-radius:5px;background:#fff;color:#81909a}
+.live-centre .results-search:focus-within{border-color:#83b6d5;box-shadow:0 0 0 3px rgba(49,134,189,.09)}
+.live-centre .results-search input{width:210px;min-width:140px;border:0;outline:0;background:transparent;color:#26343e;font:11px Roboto,Arial,sans-serif}
+.live-centre .results-search input::placeholder{color:#9aa5ad}
+.live-centre .results-season{gap:7px}
+.live-centre .results-season select{font:11px Roboto,Arial,sans-serif}
+.live-centre .results-count{color:#70808b;font:9px 'Roboto Mono',monospace;white-space:nowrap}
+.live-centre .results-clear{border:0;background:transparent;color:#287bb1;font:600 10px Roboto,Arial,sans-serif;padding:6px 2px}
+.live-centre .results-clear:hover{text-decoration:underline}
+.live-centre .results-table tbody tr:focus-within{outline:2px solid #9bc7df;outline-offset:-2px}
+.live-centre .provider-match-status{white-space:normal;max-width:190px;line-height:1.45}
+.live-centre .match-centre-footer span:first-child svg{color:#7895a7}
+@media(max-width:900px){.live-centre .results-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.live-centre .results-summary{gap:7px}.live-centre .results-summary-card{padding:11px}.live-centre .results-summary-card strong{font-size:20px}.live-centre .results-summary-card small{font-size:8px}.live-centre .results-controls{align-items:stretch}.live-centre .results-search{flex:1}.live-centre .results-search input{width:100%;min-width:0}.live-centre .results-count{align-self:center}}
