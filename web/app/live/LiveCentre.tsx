@@ -130,7 +130,14 @@ export default function LiveCentre() {
             </select>
           </label>
           <span className="results-count">{visibleResults.length} matches</span>
+          {(resultSearch || season !== "All") && <button className="results-clear" onClick={() => { setResultSearch(""); setSeason("All"); }}>Clear filters</button>}
         </div>
+      </div>
+      <div className="results-summary" aria-label="Results archive summary">
+        <div className="results-summary-card"><span>ARCHIVE RECORDS</span><strong>{results.length.toLocaleString("en-IN")}</strong><small>Loaded from historical dataset</small></div>
+        <div className="results-summary-card"><span>SEASONS COVERED</span><strong>{seasons.length}</strong><small>{seasons.length ? seasons[seasons.length - 1] + " – " + seasons[0] : "No season data"}</small></div>
+        <div className="results-summary-card"><span>TEAMS FEATURED</span><strong>{new Set(results.flatMap(row => [row.team1, row.team2])).size}</strong><small>Distinct franchises in this result set</small></div>
+        <div className="results-summary-card results-summary-highlight"><span>CURRENT VIEW</span><strong>{visibleResults.length.toLocaleString("en-IN")}</strong><small>Matches after search and season filters</small></div>
       </div>
       {error && <div className="match-info"><AlertCircle size={16}/>{error}</div>}
       {loading ? <div className="match-loading">Loading match results…</div> :
