@@ -103,8 +103,7 @@ export default function Home() {
       <header className="topbar"><button className="mobile-menu" onClick={() => setMobileNav(true)}><Menu/></button><div className="breadcrumb">IPL INTELLIGENCE <span>/</span> {page.toUpperCase()}</div><div className="top-actions"><span className="status"><i/> DATA ENGINE</span><div className="avatar">PK</div></div></header>
       <div className="content">
         {error && <div className="error-banner">{error}</div>}
-        {loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
-          {page === "Live Centre" && <LiveCentre/>}
+        {page === "Live Centre" ? <LiveCentre/> : loading ? <div className="loading"><div className="loader"/><span>Loading cricket intelligence…</span></div> : !overview ? <div className="empty-state">Analytics data could not be loaded.</div> : <>
           {page === "Overview" && <Overview data={overview}/>}
           {page === "Players" && <Players rows={filteredPlayers} search={search} setSearch={setSearch} role={role} setRole={setRole} onSelect={openPlayer}/>}
           {page === "Teams" && <Teams rows={teams} teamA={teamA} teamB={teamB} setTeamA={setTeamA} setTeamB={setTeamB} compare={compare} result={comparison}/>}
@@ -112,7 +111,8 @@ export default function Home() {
           {page === "Matchups" && <Matchups/>}
           {page === "Impact" && <Players rows={players} search={search} setSearch={setSearch} role={role} setRole={setRole} impact onSelect={openPlayer}/>}
           {page === "Win Probability" && <WinProbability/>}
-          {page === "Franchise Fit" && <Shortlist rows={shortlist}/>}\n          {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)}/>}
+          {page === "Franchise Fit" && <Shortlist rows={shortlist}/>}
+          {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)}/>}
         </>}
         <footer className="footer"><span>IPL INTELLIGENCE © 2026</span><span>HISTORICAL ANALYTICS + LIVE DATA PROVIDER</span></footer>
       </div>
